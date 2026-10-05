@@ -8,7 +8,7 @@
 (async () => {
   const url = (p) => chrome.runtime.getURL(p);
   const { capturePassiveFrames } = await import(url('vendor/engine.js'));
-  const { CATEGORY_LABELS, CLEF_CONFIG } = await import(url('vendor/config.js'));
+  const { CLEF_CONFIG } = await import(url('vendor/config.js'));
   const { YoutubeShortsAdapter } = await import(url('adapters/youtube-shorts.js'));
   const { TiktokAdapter } = await import(url('adapters/tiktok.js'));
   const { InstagramReelsAdapter } = await import(url('adapters/instagram-reels.js'));
@@ -176,11 +176,6 @@
       video.pause();
       showOverlay(
         adapter.overlayHost(video),
-        {
-          label: CATEGORY_LABELS[decision.reason] ?? decision.reason ?? 'AI-generated content',
-          slopProb: decision.slopProb,
-          authenticity: decision.authenticity,
-        },
         {
           onResume: () => {
             seen.set(key, 'resumed');

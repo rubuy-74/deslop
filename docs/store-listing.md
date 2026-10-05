@@ -22,10 +22,9 @@ AI-generated content BEFORE you sit through it.
 • Works on YouTube Shorts, TikTok and Instagram Reels
 • Warn-only: every failure path fails OPEN — a broken classifier never
   blocks your feed, it just plays
-• Shows WHY: category (AI absurdity bait / face-swap parody / static
-  slideshow / other synthetic), confidence, and an authenticity score
-• [Resume] to watch anyway, [Skip] to jump to the next video — or report a
-  wrong verdict to improve the model
+• One clear signal before playback: [Resume] to watch anyway, [Skip] to jump
+  to the next video — or hit "Got it wrong?" to report a bad call and
+  improve the model
 • Privacy-first: three tiny downscaled frames of the video you're already
   watching go to the classifier — never your history, identity or account.
   See the privacy policy for the complete inventory.
@@ -57,7 +56,7 @@ the analysis; everyone else gets the shared verdict.
 - [x] Icon 128×128 (`packages/extension/icons/icon-128.png`) + 16/32/48 in
       the manifest
 - [ ] Screenshots, 1280×800, up to 5, suggested set:
-      1. YouTube Shorts warning overlay (flag, reason, [Resume]/[Skip])
+      1. YouTube Shorts warning overlay (flag, [Resume]/[Skip]/[Got it wrong?])
       2. TikTok warning overlay
       3. Instagram Reels warning overlay
       4. Options page (worker URL + token fields)

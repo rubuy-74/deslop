@@ -26,8 +26,8 @@ Workers AI: @cf/cloudflare/clef-flash
 decision: flag = 1 − P(organic) ≥ 0.80
    │
    ├─ pass ─► nothing happens, feed plays on
-   └─ flag ─► pause + blurred overlay: reason, confidence, authenticity
-                [Resume]  [Skip]  [Not slop? Report]  → fine-tuning dataset (R2)
+   └─ flag ─► pause + blurred overlay: [Resume] [Skip] [Got it wrong?]
+                user report ──► fine-tuning dataset (R2) + verdict-cache invalidation
 ```
 
 ## Packages

@@ -42,7 +42,6 @@ function ensureStyles() {
     '.slop-overlay .slop-badge { font-size: 26px; font-weight: 800; color: #111; background: #ffcc4d;',
     '  width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }',
     '.slop-overlay .slop-title { font-size: 18px; font-weight: 700; }',
-    '.slop-overlay .slop-why { font-size: 13px; color: #bbb; line-height: 1.5; max-width: 320px; }',
     '.slop-overlay .slop-row { display: flex; gap: 10px; }',
     '.slop-overlay button { border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }',
     '.slop-overlay .slop-resume { background: #4f8cff; color: #fff; }',
@@ -64,19 +63,13 @@ function ensureStyles() {
 /**
  * @param {HTMLElement} host   element the overlay covers (injection target
  *   for 'in-host', geometry reference for 'fixed-root')
- * @param {{label: string, slopProb: number, authenticity: number|null}} decision
  * @param {{onResume: () => void, onSkip: () => void, onReport?: (comment: string) => Promise<boolean>}} actions
  * @param {{strategy?: 'in-host' | 'fixed-root'}} [opts]  per-adapter render
  *   mode; adapters declare their overlayStrategy
  * @returns {{remove: () => void}}
  */
-export function showOverlay(host, decision, actions, { strategy = 'in-host' } = {}) {
+export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   ensureStyles();
-
-  const pct = Math.round(decision.slopProb * 100);
-  const auth = decision.authenticity !== null && decision.authenticity !== undefined
-    ? `, authenticity ${decision.authenticity.toFixed(1)}/3`
-    : '';
 
   const overlay = document.createElement('div');
   overlay.className = `slop-overlay slop-overlay--${strategy === 'fixed-root' ? 'root' : 'host'}`;
@@ -89,10 +82,6 @@ export function showOverlay(host, decision, actions, { strategy = 'in-host' } = 
   const title = document.createElement('div');
   title.className = 'slop-title';
   title.textContent = 'Likely AI-generated slop';
-
-  const why = document.createElement('div');
-  why.className = 'slop-why';
-  why.textContent = `${decision.label} — ${pct}% confident${auth}`;
 
   const row = document.createElement('div');
   row.className = 'slop-row';
@@ -108,14 +97,14 @@ export function showOverlay(host, decision, actions, { strategy = 'in-host' } = 
   skipBtn.addEventListener('click', () => { console.log('[slop] skip clicked'); remove(); actions.onSkip(); });
 
   row.append(resumeBtn, skipBtn);
-  overlay.append(badge, title, why, row);
+  overlay.append(badge, title, row);
 
   // Feedback: "this classification is wrong" — free-text correction that
   // becomes a fine-tuning dataset entry (frames + verdict + explanation).
   if (actions.onReport) {
     const wrongLink = document.createElement('button');
     wrongLink.className = 'slop-wrong';
-    wrongLink.textContent = 'wrong?';
+    wrongLink.textContent = 'Got it wrong?';
 
     const form = document.createElement('div');
     form.className = 'slop-form';
