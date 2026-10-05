@@ -1,0 +1,534 @@
+{
+  "timestamp": "2026-10-02T01:45:49.331Z",
+  "model": "clef-flash",
+  "threshold": 0.8,
+  "config": {
+    "state": "Four chronological frames sampled across the first 2 seconds of a short-form mobile video. Judge the visual content.",
+    "questions": {
+      "slop_category": {
+        "type": "choice",
+        "instructions": "Which category best describes this video? Judge by visual signatures, not topic.",
+        "criteria": {
+          "organic": "Real camera footage, human-made animation, gameplay, or standard creator content with natural optics and motion",
+          "absurdist_ai": "Synthetic rendering artifacts (plastic textures, impossible physics or speculars, distorted micro-details); e.g. anthropomorphic objects or foods acting out dramas",
+          "synthetic_parody": "Real public-figure faces mapped onto incongruous bodies; facial boundary artifacts, frozen gaze, ear/jaw blending between frames",
+          "static_ai_slideshow": "Sequence of static generative illustrations with no organic camera motion and oversized automated captions",
+          "other_ai": "AI-generated or synthetic content not matching the other categories: smeared or hallucinated detail, generative artifacts of any kind"
+        }
+      },
+      "is_slop": {
+        "type": "noul",
+        "instructions": "Is this video AI-generated slop or low-effort synthetic content?",
+        "criteria": {
+          "true": "Any synthetic generation, face-swap, or automated slideshow content",
+          "false": "Genuinely filmed or human-crafted content, even if filtered or edited"
+        }
+      },
+      "visual_authenticity": {
+        "type": "score",
+        "instructions": "Rate the organic visual authenticity of this media.",
+        "criteria": [
+          "Pure synthetic generation: plastic skin, uncanny blending, hallucinated limbs",
+          "Heavy AI augmentation with obvious visual artifacts",
+          "Ambiguous or heavily filtered authentic footage",
+          "Verifiable organic photography with consistent real-world optics"
+        ]
+      }
+    },
+    "extraction": {
+      "fractions": [
+        0.1,
+        0.4,
+        0.7,
+        0.95
+      ],
+      "windowCapS": 2,
+      "canvasWidth": 360,
+      "canvasHeight": 640,
+      "mimeType": "image/webp",
+      "fallbackMimeType": "image/jpeg",
+      "quality": 0.75,
+      "seekTimeoutMs": 1000
+    }
+  },
+  "summary": {
+    "total": 21,
+    "labeled": 20,
+    "correct": 18,
+    "unlabeled": 0,
+    "errors": 1,
+    "disagreements": 0,
+    "avgExtractMs": 489,
+    "avgClefMs": 327,
+    "avgTotalMs": 840,
+    "avgTokens": 1450
+  },
+  "results": [
+    {
+      "file": "snaptik_7275090674603576619_v3.mp4",
+      "expectFlag": false,
+      "expectCategory": "organic",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.2694,
+      "crossCheck": 0.096,
+      "disagreement": false,
+      "authenticity": 2.4512,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 380,
+        "clefMs": 315
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 58612,
+      "totalMs": 713
+    },
+    {
+      "file": "snaptik_7511680476118011158_v3.mp4",
+      "expectFlag": false,
+      "expectCategory": "organic",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.3485,
+      "crossCheck": 0.1458,
+      "disagreement": false,
+      "authenticity": 2.7607,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 317,
+        "clefMs": 410
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 76740,
+      "totalMs": 754
+    },
+    {
+      "file": "snaptik_7563418654709255446_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "absurdist_ai",
+      "slopProb": 0.974,
+      "crossCheck": 0.9062,
+      "disagreement": false,
+      "authenticity": 0.4342,
+      "categoryChoice": "absurdist_ai",
+      "timings": {
+        "extractMs": 402,
+        "clefMs": 304
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 47414,
+      "totalMs": 722
+    },
+    {
+      "file": "snaptik_7569358159186398466_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.2337,
+      "crossCheck": 0.0854,
+      "disagreement": false,
+      "authenticity": 2.4317,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 848,
+        "clefMs": 433
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 55514,
+      "totalMs": 1295
+    },
+    {
+      "file": "snaptik_7581109820602813718_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.9765,
+      "crossCheck": 0.9525,
+      "disagreement": false,
+      "authenticity": 0.6089,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 397,
+        "clefMs": 390
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 77090,
+      "totalMs": 807
+    },
+    {
+      "file": "snaptik_7581440315559562518_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "error": "analyze: Clef call failed: AiError: 5021: The estimated number of input and maximum output tokens (68457) exceeded this model context window limit (65536)."
+    },
+    {
+      "file": "snaptik_7609378331586268430_v3.mp4",
+      "expectFlag": false,
+      "expectCategory": "organic",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.1692,
+      "crossCheck": 0.0535,
+      "disagreement": false,
+      "authenticity": 2.5396,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 470,
+        "clefMs": 353
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 135538,
+      "totalMs": 849
+    },
+    {
+      "file": "snaptik_7611254151669894422_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.2856,
+      "crossCheck": 0.0954,
+      "disagreement": false,
+      "authenticity": 2.3825,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 1068,
+        "clefMs": 334
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 97088,
+      "totalMs": 1422
+    },
+    {
+      "file": "snaptik_7643815938638220552_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "flag": true,
+      "reason": "absurdist_ai",
+      "slopProb": 0.9827,
+      "crossCheck": 0.8845,
+      "disagreement": false,
+      "authenticity": 0.2778,
+      "categoryChoice": "absurdist_ai",
+      "timings": {
+        "extractMs": 402,
+        "clefMs": 327
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 158114,
+      "totalMs": 747
+    },
+    {
+      "file": "snaptik_7660559176166280470_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "static_ai_slideshow",
+      "slopProb": 0.9869,
+      "crossCheck": 0.8927,
+      "disagreement": false,
+      "authenticity": 0.3209,
+      "categoryChoice": "static_ai_slideshow",
+      "timings": {
+        "extractMs": 402,
+        "clefMs": 434
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 91742,
+      "totalMs": 857
+    },
+    {
+      "file": "snaptik_7681319788588600590_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "absurdist_ai",
+      "slopProb": 0.9782,
+      "crossCheck": 0.8612,
+      "disagreement": false,
+      "authenticity": 0.3261,
+      "categoryChoice": "absurdist_ai",
+      "timings": {
+        "extractMs": 1028,
+        "clefMs": 348
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 106724,
+      "totalMs": 1398
+    },
+    {
+      "file": "snaptik_7683701286088297758_v3.mp4",
+      "expectFlag": false,
+      "expectCategory": "organic",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.1959,
+      "crossCheck": 0.0825,
+      "disagreement": false,
+      "authenticity": 2.5541,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 453,
+        "clefMs": 212
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 63242,
+      "totalMs": 681
+    },
+    {
+      "file": "snaptik_7686457239309143329_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.9598,
+      "crossCheck": 0.9099,
+      "disagreement": false,
+      "authenticity": 0.5304,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 302,
+        "clefMs": 256
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 111802,
+      "totalMs": 576
+    },
+    {
+      "file": "snaptik_7688113437443902751_v3.mp4",
+      "expectFlag": false,
+      "expectCategory": "organic",
+      "flag": false,
+      "reason": null,
+      "slopProb": 0.3969,
+      "crossCheck": 0.226,
+      "disagreement": false,
+      "authenticity": 2.1261,
+      "categoryChoice": "organic",
+      "timings": {
+        "extractMs": 505,
+        "clefMs": 340
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 119648,
+      "totalMs": 866
+    },
+    {
+      "file": "snaptik_7689013238566030614_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.9274,
+      "crossCheck": 0.9142,
+      "disagreement": false,
+      "authenticity": 0.9701,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 396,
+        "clefMs": 301
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 91464,
+      "totalMs": 709
+    },
+    {
+      "file": "snaptik_7689258340676848927_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.8529,
+      "crossCheck": 0.8292,
+      "disagreement": false,
+      "authenticity": 1.0949,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 420,
+        "clefMs": 264
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 43338,
+      "totalMs": 696
+    },
+    {
+      "file": "snaptik_7689573056917900574_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.9858,
+      "crossCheck": 0.9331,
+      "disagreement": false,
+      "authenticity": 0.3355,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 386,
+        "clefMs": 305
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 61886,
+      "totalMs": 762
+    },
+    {
+      "file": "snaptik_7689797262087703826_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "static_ai_slideshow",
+      "slopProb": 0.9853,
+      "crossCheck": 0.8657,
+      "disagreement": false,
+      "authenticity": 0.3293,
+      "categoryChoice": "static_ai_slideshow",
+      "timings": {
+        "extractMs": 405,
+        "clefMs": 327
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 84254,
+      "totalMs": 748
+    },
+    {
+      "file": "snaptik_7691251573216808222_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "absurdist_ai",
+      "slopProb": 0.9853,
+      "crossCheck": 0.8801,
+      "disagreement": false,
+      "authenticity": 0.3519,
+      "categoryChoice": "absurdist_ai",
+      "timings": {
+        "extractMs": 322,
+        "clefMs": 409
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 76926,
+      "totalMs": 802
+    },
+    {
+      "file": "snaptik_7691317912937712903_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "absurdist_ai",
+      "flag": true,
+      "reason": "other_ai",
+      "slopProb": 0.9831,
+      "crossCheck": 0.929,
+      "disagreement": false,
+      "authenticity": 0.3805,
+      "categoryChoice": "other_ai",
+      "timings": {
+        "extractMs": 409,
+        "clefMs": 236
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 64642,
+      "totalMs": 667
+    },
+    {
+      "file": "snaptik_7691392733084142879_v3.mp4",
+      "expectFlag": true,
+      "expectCategory": "synthetic_parody",
+      "flag": true,
+      "reason": "synthetic_parody",
+      "slopProb": 0.9761,
+      "crossCheck": 0.9368,
+      "disagreement": false,
+      "authenticity": 0.5064,
+      "categoryChoice": "synthetic_parody",
+      "timings": {
+        "extractMs": 464,
+        "clefMs": 246
+      },
+      "usage": {
+        "input_tokens": 1450,
+        "output_tokens": 0
+      },
+      "model": "clef-flash",
+      "payloadBytes": 113938,
+      "totalMs": 734
+    }
+  ]
+}

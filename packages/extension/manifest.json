@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Slop Rotting",
+  "version": "0.4.0",
+  "description": "Detects AI slop in short-form video feeds and warns before you watch.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://slop-rotting-worker.rubemviscard2635.workers.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.youtube.com/shorts*",
+        "*://youtube.com/shorts*",
+        "*://www.tiktok.com/*",
+        "*://tiktok.com/*",
+        "*://www.instagram.com/*",
+        "*://instagram.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["vendor/*", "adapters/*", "overlay.js", "debug-panel.js"],
+      "matches": [
+        "*://www.youtube.com/*",
+        "*://youtube.com/*",
+        "*://www.tiktok.com/*",
+        "*://tiktok.com/*",
+        "*://www.instagram.com/*",
+        "*://instagram.com/*"
+      ]
+    }
+  ],
+  "options_page": "options.html"
+}

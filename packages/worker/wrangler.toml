@@ -1,0 +1,19 @@
+name = "slop-rotting-worker"
+main = "src/index.ts"
+compatibility_date = "2026-10-02"
+preview_urls = false
+
+[ai]
+binding = "AI"
+
+[[r2_buckets]]
+binding = "FEEDBACK_BUCKET"
+bucket_name = "slop-feedback"
+
+[[kv_namespaces]]
+binding = "VERDICTS"
+id = "b6649328b85942b3acd93ae87a2a68dc"
+
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "e444afe5b38d4ebdbc35e0644bbcd81f"

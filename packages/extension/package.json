@@ -1,0 +1,11 @@
+{
+  "name": "@slop/extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "cp ../engine/engine.js ../engine/config.js vendor/",
+    "icons": "node scripts/gen-icons.mjs",
+    "zip": "node scripts/zip.mjs"
+  }
+}

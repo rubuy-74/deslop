@@ -1,0 +1,23 @@
+[
+  { "file": "snaptik_7275090674603576619_v3.mp4", "expectFlag": false, "expectCategory": "organic", "notes": "77.7s, 576x1024" },
+  { "file": "snaptik_7511680476118011158_v3.mp4", "expectFlag": false, "expectCategory": "organic", "notes": "14.1s, 576x1024" },
+  { "file": "snaptik_7563418654709255446_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "24.1s, 576x1024" },
+  { "file": "snaptik_7569358159186398466_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "15.6s, 1080x1920" },
+  { "file": "snaptik_7581109820602813718_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "19.0s, 576x1032" },
+  { "file": "snaptik_7581440315559562518_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "31.8s, 576x1038" },
+  { "file": "snaptik_7609378331586268430_v3.mp4", "expectFlag": false, "expectCategory": "organic", "notes": "41.5s, 720x1280" },
+  { "file": "snaptik_7611254151669894422_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "18.4s, 1056x1920" },
+  { "file": "snaptik_7643815938638220552_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "134.4s, 576x1024" },
+  { "file": "snaptik_7660559176166280470_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "60.0s, 576x1048" },
+  { "file": "snaptik_7681319788588600590_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "60.0s, 1080x1920" },
+  { "file": "snaptik_7683701286088297758_v3.mp4", "expectFlag": false, "expectCategory": "organic", "notes": "18.2s, 720x1280" },
+  { "file": "snaptik_7686457239309143329_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "8.5s, 576x1022" },
+  { "file": "snaptik_7688113437443902751_v3.mp4", "expectFlag": false, "expectCategory": "organic", "notes": "71.9s, 720x1280" },
+  { "file": "snaptik_7689013238566030614_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "13.6s, 576x1012" },
+  { "file": "snaptik_7689258340676848927_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "9.6s, 720x1260" },
+  { "file": "snaptik_7689573056917900574_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "18.5s, 720x1280" },
+  { "file": "snaptik_7689797262087703826_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "91.9s, 576x1024" },
+  { "file": "snaptik_7691251573216808222_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "61.0s, 720x1280" },
+  { "file": "snaptik_7691317912937712903_v3.mp4", "expectFlag": true, "expectCategory": "absurdist_ai", "notes": "77.2s, 576x1024" },
+  { "file": "snaptik_7691392733084142879_v3.mp4", "expectFlag": true, "expectCategory": "synthetic_parody", "notes": "15.1s, 720x1280" }
+]

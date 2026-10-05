@@ -1,0 +1,14 @@
+{
+  "name": "@slop/engine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Platform-agnostic anti-slop decision engine: frame extraction, Clef client, decision logic",
+  "exports": {
+    ".": "./engine.js",
+    "./config": "./config.js"
+  },
+  "scripts": {
+    "test": "node test-decide.mjs && node test-retry.mjs && node test-cache-quota.mjs"
+  }
+}

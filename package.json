@@ -1,0 +1,16 @@
+{
+  "name": "slop-rotting",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/engine",
+    "packages/testbed",
+    "packages/worker",
+    "packages/extension"
+  ],
+  "scripts": {
+    "test": "npm test -w packages/engine",
+    "serve": "npm run serve -w packages/testbed",
+    "dev:worker": "npm run dev -w packages/worker"
+  }
+}

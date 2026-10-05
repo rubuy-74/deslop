@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anti-Slop Engine — Testbed</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, sans-serif; background: #111; color: #eee;
+      display: grid; grid-template-columns: 300px 1fr; min-height: 100vh;
+    }
+    aside { padding: 16px; border-right: 1px solid #333; overflow-y: auto; }
+    main { display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; }
+    h1 { font-size: 16px; margin: 0 0 12px; }
+    h2 { font-size: 13px; color: #999; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+    #gallery { display: flex; flex-direction: column; gap: 4px; }
+    #gallery button {
+      text-align: left; background: #1d1d1d; color: #ddd; border: 1px solid #333;
+      border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 13px;
+    }
+    #gallery button:hover { border-color: #666; }
+    #gallery button.active { border-color: #4f8cff; background: #16233c; }
+    #gallery button .tag { float: right; font-size: 11px; opacity: .75; }
+    .controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .controls button {
+      background: #4f8cff; color: #fff; border: 0; border-radius: 6px;
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+    }
+    .controls button.secondary { background: #2c2c2c; border: 1px solid #444; }
+
+    #stage { position: relative; width: 360px; height: 640px; background: #000; border-radius: 10px; overflow: hidden; }
+    #player { width: 100%; height: 100%; object-fit: contain; }
+
+    #overlay {
+      position: absolute; inset: 0; display: none;
+      flex-direction: column; justify-content: center; align-items: center; gap: 14px;
+      background: rgba(10, 10, 10, .72); backdrop-filter: blur(14px);
+      text-align: center; padding: 28px;
+    }
+    #overlay.show { display: flex; }
+    #overlay .badge {
+      font-size: 26px; font-weight: 800; color: #111; background: #ffcc4d;
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #overlay .title { font-size: 18px; font-weight: 700; }
+    #overlay .why { font-size: 13px; color: #bbb; line-height: 1.5; }
+    #overlay .row { display: flex; gap: 10px; }
+    #overlay button {
+      border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer;
+    }
+    #resumeBtn { background: #4f8cff; color: #fff; }
+    #skipBtn { background: #2c2c2c; color: #eee; border: 1px solid #555; }
+
+    #status { font-size: 12px; color: #888; min-height: 16px; }
+    #status.err { color: #e08080; }
+
+    #evalResults { width: 100%; max-width: 860px; font-size: 12px; }
+    #evalResults table { width: 100%; border-collapse: collapse; }
+    #evalResults th, #evalResults td { border: 1px solid #333; padding: 5px 7px; text-align: left; }
+    #evalResults th { background: #1d1d1d; }
+    tr.pass td { background: #10281a; }
+    tr.fail td { background: #2e1414; }
+    tr.unlabeled td { background: #232323; color: #999; }
+    .mono { font-family: ui-monospace, monospace; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Anti-Slop Testbed</h1>
+    <h2>Gallery</h2>
+    <div id="gallery"></div>
+    <div class="controls">
+      <button id="evalBtn" class="secondary">Run eval</button>
+      <button id="evalClefBtn" class="secondary" title="Run eval with @cf/cloudflare/clef">Eval: clef</button>
+    </div>
+    <h2>Status</h2>
+    <div id="status">idle</div>
+  </aside>
+
+  <main>
+    <div id="stage">
+      <video id="player" muted playsinline preload="auto"></video>
+      <div id="overlay">
+        <div class="badge">!</div>
+        <div class="title">Likely AI-generated slop</div>
+        <div class="why" id="overlayWhy"></div>
+        <div class="row">
+          <button id="resumeBtn">Resume</button>
+          <button id="skipBtn">Skip</button>
+        </div>
+      </div>
+    </div>
+    <div id="evalResults"></div>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

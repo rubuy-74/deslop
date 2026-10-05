@@ -1,0 +1,10 @@
+videos/*
+!videos/.gitkeep
+node_modules/
+.wrangler/
+dist/
+.dev.vars
+.deploy-token
+packages/extension/vendor/
+packages/extension/config.local.json
+
