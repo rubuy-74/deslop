@@ -58,7 +58,7 @@ Build the **engine + testbed** for detecting AI slop in short-form video:
 Repo layout:
 
 ```
-slop_rotting/
+deslop/
 ├── PLAN.md
 ├── worker/
 │   ├── wrangler.toml        # ai binding, compatibility_date

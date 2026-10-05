@@ -1,8 +1,8 @@
 /**
- * Rasterizes icons/icon.svg into the PNG sizes the manifest and the
- * Chrome Web Store require (16/32/48/128). Reuses the sharp binary that
- * ships with wrangler under packages/worker/node_modules — no new
- * dependencies for this package.
+ * Rasterizes icons/icon.svg (the warning-sign mark) into the PNG sizes the
+ * manifest and the Chrome Web Store require (16/32/48/128). Reuses the sharp
+ * binary that ships with wrangler under packages/worker/node_modules — no
+ * new dependencies for this package.
  *
  * Run: npm run icons   (from packages/extension)
  */

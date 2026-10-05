@@ -9,7 +9,7 @@
 import { analyze, decide } from './vendor/engine.js';
 
 const DEFAULTS = {
-  workerUrl: 'https://slop-rotting-worker.rubemviscard2635.workers.dev/analyze',
+  workerUrl: 'https://deslop-worker.rubemviscard2635.workers.dev/analyze',
   token: '',
 };
 

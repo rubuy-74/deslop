@@ -5,7 +5,7 @@ afterwards, but written down now" decision. Nothing here is live yet.
 
 ## Listing identity
 
-- **Name:** Slop Rotting
+- **Name:** deslop
 - **Summary (≤132 chars):**
   `Warns before you watch AI-generated slop on Shorts, TikTok and Reels. Warn-only — never blocks playback.`
 - **Category:** Productivity
@@ -15,7 +15,7 @@ afterwards, but written down now" decision. Nothing here is live yet.
 
 ```
 Short-form feeds are filling up with AI-generated slop — plastic "absurdity
-bait", face-swap parodies, static AI slideshows. Slop Rotting watches the
+bait", face-swap parodies, static AI slideshows. deslop watches the
 video you're about to watch and throws a blur warning over likely
 AI-generated content BEFORE you sit through it.
 
@@ -47,7 +47,7 @@ the analysis; everyone else gets the shared verdict.
 - Host permissions (`youtube.com`, `tiktok.com`, `instagram.com`) — read
   video frames from the page for classification, and render the warning
   overlay. No data is written to the pages, no platform content is modified.
-- Host permission (the analysis Worker, `slop-rotting-worker.<account>.workers.dev`)
+- Host permission (the analysis Worker, `deslop-worker.<account>.workers.dev`)
   — sends the frames to the classifier from the background service worker
   (keeps the request out of the page's CSP).
 
@@ -55,11 +55,14 @@ the analysis; everyone else gets the shared verdict.
 
 - [x] Icon 128×128 (`packages/extension/icons/icon-128.png`) + 16/32/48 in
       the manifest
-- [ ] Screenshots, 1280×800, up to 5, suggested set:
-      1. YouTube Shorts warning overlay (flag, [Resume]/[Skip]/[Got it wrong?])
-      2. TikTok warning overlay
-      3. Instagram Reels warning overlay
-      4. Options page (worker URL + token fields)
+- [ ] Screenshots, 1280×800, up to 5 — captured files in `docs/images/`,
+      but the dev console requires **exactly 1280×800 (or 640×400)**; current
+      captures are 1386×939 / 1522×930 / 1535×924 and need a resize+crop
+      before upload:
+      1. YouTube Shorts warning overlay — `docs/images/youtube.png`
+      2. TikTok warning overlay — `docs/images/tiktok.png`
+      3. Instagram Reels warning overlay — `docs/images/reels.png`
+      4. Options page (worker URL + token fields) — still to capture
       5. (optional) Debug panel collapsed in corner — shows the live log
 - [ ] Small promo tile 440×280 (optional but recommended)
 - [ ] Reuse `icons/icon-128.png` as the store icon base
@@ -69,8 +72,10 @@ the analysis; everyone else gets the shared verdict.
 1. `$5` one-time developer registration fee
    (<https://chrome.google.com/webstore/devconsole>)
 2. Build the artifact: `cd packages/extension && npm run zip`
-   → `dist/slop-rotting-<version>.zip` (vendor staged fresh; token baked
+   → `dist/deslop-<version>.zip` (vendor staged fresh; token baked
    from `config.local.json`; the script refuses a tokenless build)
+   2b. Landing page CTA: flip `STORE_URL` in `packages/worker/public/index.html`
+   to the item URL, then `cd packages/worker && npx wrangler deploy`
 3. Upload in the dev console; paste the listing fields above
 4. Privacy policy URL: link to `PRIVACY.md` in the public repo
    (this file is written to double as the store privacy policy)

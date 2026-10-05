@@ -1,7 +1,12 @@
-name = "slop-rotting-worker"
+name = "deslop-worker"
 main = "src/index.ts"
 compatibility_date = "2026-10-02"
 preview_urls = false
+
+# Static site (landing page) — file-matching GETs are served from here,
+# everything else (POST /analyze, POST /feedback, preflights) hits the Worker.
+[assets]
+directory = "./public"
 
 [ai]
 binding = "AI"

@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>deslop — know before you watch</title>
+  <meta name="description" content="A browser extension that spots mass-produced AI content before it melts into your timeline." />
+  <link rel="icon" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --beige: #edebe3;
+      --lime: #cdfa05;
+      --orange: #ff4d00;
+      --ink: #0b0b0c;
+      --muted: #55524a;
+      --faint: #8b877a;
+      --line: rgba(20, 18, 10, 0.18);
+      --sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--beige);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    ::selection { background: var(--orange); color: #fff; }
+
+    /* ---------- full-width header ---------- */
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: var(--beige);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+    .brand span { font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+
+    .btn {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      color: var(--ink);
+      border: 1.5px solid var(--ink);
+      border-radius: 9px;
+      padding: 8px 20px;
+      background: transparent;
+      cursor: pointer;
+      display: inline-block;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .btn:hover { background: var(--ink); color: var(--beige); }
+    .btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+    /* ---------- split body ---------- */
+    .layout { display: flex; flex: 1; }
+
+    .left {
+      flex: 1.22;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .left-content { padding: 64px 56px 48px; margin: auto 0; }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: var(--faint);
+      margin: 0 0 34px;
+    }
+
+    h1.wordmark {
+      margin: 0 0 30px;
+      font-size: clamp(64px, 9.5vw, 138px);
+      font-weight: 700;
+      letter-spacing: -0.045em;
+      line-height: 0.92;
+    }
+    /* The strike through "slop": a marker swipe drawn as a rotated bar on
+       the span itself — percentage geometry keeps it on the glyphs at every
+       wordmark size, rotate() gives it the angle. */
+    h1.wordmark .slop { position: relative; }
+    h1.wordmark .slop::after {
+      content: "";
+      position: absolute;
+      left: -5%;
+      right: -5%;
+      top: 46%;
+      height: 10%;
+      background: var(--orange);
+      border-radius: 3px;
+      transform: rotate(-7deg);
+      pointer-events: none;
+    }
+
+    .sub {
+      font-size: 21px;
+      line-height: 1.5;
+      font-weight: 400;
+      color: #3c3a33;
+      max-width: 470px;
+      margin: 0 0 36px;
+    }
+
+    .btn-cta {
+      font-size: 20px;
+      font-weight: 700;
+      background: var(--lime);
+      border-radius: 10px;
+      padding: 14px 28px;
+      box-shadow: 5px 5px 0 var(--ink);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+    .btn-cta:hover {
+      background: var(--lime);
+      color: var(--ink);
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+    .btn-cta:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); }
+
+    .left-footer {
+      border-top: 1px solid var(--line);
+      margin: 0 56px;
+      padding: 26px 0 34px;
+      display: flex;
+      gap: 48px;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+    .left-footer p { margin: 0; }
+    .left-footer .col-a { max-width: 320px; }
+
+    /* ---------- right (lime) ---------- */
+    .right {
+      flex: 1;
+      background: var(--lime);
+      border-left: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      padding: 26px 40px 56px;
+      min-width: 0;
+    }
+    .eyebrow-lime {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: rgba(0, 0, 0, 0.52);
+      margin: 0;
+      align-self: flex-start;
+    }
+    .stage { flex: 1; display: grid; place-items: center; padding-top: 36px; }
+
+    .tilt-card {
+      background: var(--orange);
+      padding: 16px;
+      border-radius: 8px;
+      transform: rotate(6deg);
+      box-shadow: 0 30px 60px rgba(60, 40, 0, 0.25);
+      width: min(430px, 90%);
+    }
+    .phone {
+      background: #0b0c0e;
+      border-radius: 20px;
+      padding: 12px;
+      transform: rotate(-4deg);
+    }
+    .screen { display: block; width: 100%; height: auto; border-radius: 12px; }
+
+    @media (max-width: 920px) {
+      .layout { flex-direction: column; }
+      .right { border-left: none; border-top: 1px solid var(--line); }
+      .left-content { padding: 44px 24px 36px; }
+      .left-footer { margin: 0 24px; flex-wrap: wrap; gap: 20px; }
+      .right { min-height: 72vh; padding-bottom: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">
+      <span>deslop</span>
+    </a>
+    <a class="btn" data-store-link>download</a>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <div class="left-content">
+        <p class="eyebrow">YOUR ATTENTION HAS STANDARDS</p>
+        <h1 class="wordmark">de<span class="slop">slop</span></h1>
+        <p class="sub">
+          A browser extension that spots mass-produced AI content before it
+          melts into your timeline.
+        </p>
+        <a class="btn btn-cta" data-store-link>I want it!</a>
+      </div>
+
+      <div class="left-footer">
+        <p class="col-a">A quality-control stamp for the algorithmic feed: direct, skeptical, and a little bit feral.</p>
+        <p class="sig">Less slop.<br /><em>More signal.</em></p>
+      </div>
+    </div>
+
+    <div class="right">
+      <p class="eyebrow-lime">IN-FEED INTERVENTION</p>
+      <div class="stage">
+        <div class="tilt-card">
+          <div class="phone">
+            <img class="screen" src="/overlay.png" alt="The deslop warning overlay pausing a video: Likely AI-generated slop — Resume or Skip" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Single source of truth for the store link — every CTA on the page uses it.
+    // TODO: replace with the Chrome Web Store item URL after the first submission.
+    const STORE_URL = 'https://chromewebstore.google.com/search/deslop';
+    document.querySelectorAll('[data-store-link]').forEach((el) => {
+      el.href = STORE_URL;
+      el.target = '_blank';
+      el.rel = 'noopener';
+    });
+  </script>
+</body>
+</html>

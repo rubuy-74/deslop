@@ -40,7 +40,7 @@ if (!token || token === 'PASTE_TOKEN_HERE') {
   process.exit(1);
 }
 
-const stage = join(dist, `slop-rotting-${version}`);
+const stage = join(dist, `deslop-${version}`);
 await rm(dist, { recursive: true, force: true });
 await mkdir(stage, { recursive: true });
 
@@ -73,7 +73,7 @@ await mkdir(join(stage, 'vendor'), { recursive: true });
 await cp(join(ext, '../engine/engine.js'), join(stage, 'vendor/engine.js'));
 await cp(join(ext, '../engine/config.js'), join(stage, 'vendor/config.js'));
 
-const zipPath = join(dist, `slop-rotting-${version}.zip`);
+const zipPath = join(dist, `deslop-${version}.zip`);
 execFileSync('zip', ['-r', '-X', '-q', zipPath, '.'], { cwd: stage });
 console.log(`staged ${stage}`);
 console.log(`wrote ${zipPath}`);

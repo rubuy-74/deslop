@@ -1,6 +1,10 @@
 # deslop
 
-**Slop Rotting** — a warn-only anti-slop layer for short-form video feeds.
+deslop is a warn-only anti-slop layer for short-form video feeds.
+
+Landing page: <https://deslop-worker.rubemviscard2635.workers.dev> — a
+one-page static site served from `packages/worker/public/` on the same
+Worker (file-matching GETs hit static assets; the API routes are untouched).
 The extension watches YouTube Shorts, TikTok, and Instagram Reels, sends a few
 downscaled frames of each video to a vision model, and throws a blur-scrim
 warning over likely AI-generated content before you watch it. It never blocks
@@ -94,8 +98,9 @@ Then `chrome://extensions` → Developer mode → Load unpacked → select
 `config.local.example.json` to `config.local.json` and paste the token, or
 set it once on the options page (click the toolbar icon).
 
-`npm run icons` regenerates the PNG set from `icons/icon.svg`.
-`npm run zip` builds `dist/slop-rotting-<version>.zip` for the Chrome Web
+`npm run icons` regenerates the PNG set from `icons/icon.svg` (the
+warning-sign mark).
+`npm run zip` builds `dist/deslop-<version>.zip` for the Chrome Web
 Store — it stages `vendor/` fresh and **refuses to build without a real
 token in `config.local.json`** (a tokenless build would 401 against a
 token-guarded Worker).

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Slop Rotting",
-  "version": "0.4.1",
+  "name": "deslop",
+  "version": "0.4.6",
   "description": "Detects AI slop in short-form video feeds and warns before you watch.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -19,7 +19,7 @@
   },
   "permissions": ["storage"],
   "host_permissions": [
-    "https://slop-rotting-worker.rubemviscard2635.workers.dev/*"
+    "https://deslop-worker.rubemviscard2635.workers.dev/*"
   ],
   "background": {
     "service_worker": "background.js",

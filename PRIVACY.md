@@ -1,8 +1,8 @@
-# Privacy Policy — Slop Rotting (deslop)
+# Privacy Policy — deslop
 
 Last updated: 2026-10-05
 
-Slop Rotting is a warn-only browser extension that flags likely
+deslop is a warn-only browser extension that flags likely
 AI-generated short-form videos. This document is the complete inventory of
 what the extension touches, sends, and stores — it doubles as the Chrome
 Web Store privacy policy.
