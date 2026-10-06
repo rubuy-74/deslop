@@ -1,10 +1,11 @@
+<p align=center>
+<img src="https://capsule-render.vercel.app/api?type=soft&height=200&color=cdfa05&section=footer&reversal=false&text=deslop&textBg=false&fontSize=70&fontAlign=50&fontAlignY=43&rotate=0&strokeWidth=0&desc=less+slop+on+your+feed&descSize=20&descAlign=47&descAlignY=60">
+</p>
+
 # deslop
 
 deslop is a warn-only anti-slop layer for short-form video feeds.
 
-Landing page: <https://deslop-worker.rubemviscard2635.workers.dev> — a
-one-page static site served from `packages/worker/public/` on the same
-Worker (file-matching GETs hit static assets; the API routes are untouched).
 The extension watches YouTube Shorts, TikTok, and Instagram Reels, sends a few
 downscaled frames of each video to a vision model, and throws a blur-scrim
 warning over likely AI-generated content before you watch it. It never blocks
