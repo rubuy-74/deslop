@@ -89,12 +89,12 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   const resumeBtn = document.createElement('button');
   resumeBtn.className = 'slop-resume';
   resumeBtn.textContent = 'Resume';
-  resumeBtn.addEventListener('click', () => { console.log('[slop] resume clicked'); remove(); actions.onResume(); });
+  resumeBtn.addEventListener('click', () => { remove(); actions.onResume(); });
 
   const skipBtn = document.createElement('button');
   skipBtn.className = 'slop-skip';
   skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => { console.log('[slop] skip clicked'); remove(); actions.onSkip(); });
+  skipBtn.addEventListener('click', () => { remove(); actions.onSkip(); });
 
   row.append(resumeBtn, skipBtn);
   overlay.append(badge, title, row);

@@ -14,6 +14,23 @@ afterwards, but written down now" decision. Nothing here is live yet.
 ## Description
 
 ```
+Your attention has standards.
+
+Short-form feeds are flooding with AI slop — plastic "absurdity bait",
+face-swap parodies, recycled slideshows. deslop spots it before it melts
+into your timeline.
+
+When a video looks AI-generated, deslop pauses it with a gentle warning —
+then you're in charge: Resume to watch anyway, Skip to move on.
+
+• Works on YouTube Shorts, TikTok, and Instagram Reels
+• A warning, never a wall — nothing ever blocks your feed
+• "Got it wrong?" One-tap reports help it get better over time
+• Privacy-first: only a few small snapshots of the video you're already
+  watching are analyzed — never your history, identity, or account
+
+Less slop. More signal.
+```
 Short-form feeds are filling up with AI-generated slop — plastic "absurdity
 bait", face-swap parodies, static AI slideshows. deslop watches the
 video you're about to watch and throws a blur warning over likely
@@ -62,8 +79,9 @@ the analysis; everyone else gets the shared verdict.
       1. YouTube Shorts warning overlay — `docs/images/youtube.png`
       2. TikTok warning overlay — `docs/images/tiktok.png`
       3. Instagram Reels warning overlay — `docs/images/reels.png`
-      4. Options page (worker URL + token fields) — still to capture
-      5. (optional) Debug panel collapsed in corner — shows the live log
+      4. Options page (worker URL + token fields + debug toggle) — still to capture
+      5. (optional) Debug panel with the live log — enabled via the options
+         checkbox, off by default
 - [ ] Small promo tile 440×280 (optional but recommended)
 - [ ] Reuse `icons/icon-128.png` as the store icon base
 
@@ -74,16 +92,19 @@ the analysis; everyone else gets the shared verdict.
 2. Build the artifact: `cd packages/extension && npm run zip`
    → `dist/deslop-<version>.zip` (vendor staged fresh; token baked
    from `config.local.json`; the script refuses a tokenless build)
-   2b. Landing page CTA: flip `STORE_URL` in `packages/worker/public/index.html`
-   to the item URL, then `cd packages/worker && npx wrangler deploy`
+   2b. Landing page CTA: `STORE_URL` in `packages/worker/public/index.html` is
+   set to the item URL — `cd packages/worker && npx wrangler deploy` publishes
+   it
 3. Upload in the dev console; paste the listing fields above
 4. Privacy policy URL: link to `PRIVACY.md` in the public repo
    (this file is written to double as the store privacy policy)
 5. Submit for review — reviewer notes (if the form asks):
    - No remote code: all scripts including the engine (`vendor/`) are
      bundled in the zip
-   - The debug/feedback panel ships deliberately — it is the wrong-verdict
-     reporting UI, not a dev leftover; it is collapsed by default
+   - The debug/feedback panel exists but is OFF by default and invisible —
+     it only mounts when the user enables it via the settings checkbox
+     (developer tooling; the "Got it wrong?" overlay button is the
+     user-facing feedback path)
    - The shared secret in `config.local.json` is an abuse filter for our own
      API costs, not user-facing security (documented in PRIVACY.md)
 6. Version bump policy: manifest `version` + git tag before each

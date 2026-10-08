@@ -56,32 +56,37 @@
     };
   }
 
-  const panel = initDebugPanel({
-    // False-negative path: video PASSED but the user says it's slop.
-    // Fresh capture — the video is playing, and late-reveal slop is the case
-    // this exists for (per eval findings).
-    onReportSlop: async (comment) => {
-      const adapter = adapterFor(location);
-      if (!adapter) return { ok: false, error: 'no adapter for this page' };
-      const video = adapter.findActiveVideo();
-      if (!video || video.readyState < 2) return { ok: false, error: 'no active video' };
-      const key = adapter.videoKey(video);
-      const { blobs } = await capturePassiveFrames(video, { count: 3, intervalMs: 400 });
-      const dataUrls = await Promise.all(blobs.map(blobToDataUrl));
-      const report = buildReport({
-        adapter,
-        key,
-        reportedLabel: 'slop',
-        comment,
-        decision: lastAnalysis?.key === key ? lastAnalysis.decision : null,
-        dataUrls,
-        captureContext: 'fresh-on-report',
-      });
-      const res = await sendFeedback(report);
-      panel.log({ key, verdict: res.ok ? 'pass' : 'err', extra: res.ok ? `feedback: slop → ${res.key}` : `feedback failed: ${res.error}` });
-      return res;
-    },
-  });
+  // False-negative path: video PASSED but the user says it's slop.
+  // Fresh capture — the video is playing, and late-reveal slop is the case
+  // this exists for (per eval findings).
+  async function onReportSlop(comment) {
+    const adapter = adapterFor(location);
+    if (!adapter) return { ok: false, error: 'no adapter for this page' };
+    const video = adapter.findActiveVideo();
+    if (!video || video.readyState < 2) return { ok: false, error: 'no active video' };
+    const key = adapter.videoKey(video);
+    const { blobs } = await capturePassiveFrames(video, { count: 3, intervalMs: 400 });
+    const dataUrls = await Promise.all(blobs.map(blobToDataUrl));
+    const report = buildReport({
+      adapter,
+      key,
+      reportedLabel: 'slop',
+      comment,
+      decision: lastAnalysis?.key === key ? lastAnalysis.decision : null,
+      dataUrls,
+      captureContext: 'fresh-on-report',
+    });
+    const res = await sendFeedback(report);
+    panel.log({ key, verdict: res.ok ? 'pass' : 'err', extra: res.ok ? `feedback: slop → ${res.key}` : `feedback failed: ${res.error}` });
+    return res;
+  }
+
+  // Debug/feedback panel: OFF by default — production users never see it.
+  // Opt-in checkbox on the options page; takes effect on page reload.
+  const { debugPanel: debugPanelEnabled } = await chrome.storage.sync.get({ debugPanel: false });
+  const panel = debugPanelEnabled
+    ? initDebugPanel({ onReportSlop })
+    : { log() {}, setStatus() {}, setPlatform() {} };
 
   function blobToDataUrl(blob) {
     return new Promise((resolve, reject) => {

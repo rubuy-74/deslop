@@ -7,6 +7,8 @@
     body { font-family: system-ui, sans-serif; max-width: 520px; margin: 32px auto; padding: 0 16px; }
     label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 4px; }
     input { width: 100%; padding: 8px; font-size: 13px; box-sizing: border-box; }
+    label.check { display: flex; align-items: center; gap: 8px; margin-top: 16px; cursor: pointer; }
+    label.check input { width: auto; margin: 0; }
     button { margin-top: 20px; padding: 8px 16px; font-size: 14px; cursor: pointer; }
     #status { margin-top: 10px; font-size: 13px; color: #2a7d2a; }
   </style>
@@ -17,6 +19,10 @@
   <input id="workerUrl" type="url" />
   <label for="token">Shared secret (X-Slop-Token)</label>
   <input id="token" type="password" autocomplete="off" />
+  <label class="check" for="debugPanel">
+    <input id="debugPanel" type="checkbox" />
+    Debug panel — live analysis log &amp; report button (off by default; reload open tabs after changing)
+  </label>
   <button id="save">Save</button>
   <div id="status"></div>
   <script src="options.js"></script>

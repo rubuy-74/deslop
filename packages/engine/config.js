@@ -38,7 +38,7 @@ export const CLEF_CONFIG = {
   model: 'clef-flash', // overridable via ?model=clef (eval comparisons)
   threshold: 0.80, // flag when 1 - P(organic) >= threshold
   state:
-    'Four chronological frames sampled across the first 2 seconds ' +
+    'Three chronological frames sampled near the start ' +
     'of a short-form mobile video. Judge the visual content.',
   questions: {
     slop_category: {

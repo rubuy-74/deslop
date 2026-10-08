@@ -96,7 +96,9 @@ npm run build        # stage engine into vendor/ (or: npm run zip for a store bu
 Then `chrome://extensions` → Developer mode → Load unpacked → select
 `packages/extension`. If your Worker requires a token, either copy
 `config.local.example.json` to `config.local.json` and paste the token, or
-set it once on the options page (click the toolbar icon).
+set it once on the options page (click the toolbar icon). The debug/feedback
+panel is off by default — enable it on the options page (reload open tabs
+after changing).
 
 `npm run icons` regenerates the PNG set from `icons/icon.svg` (the
 warning-sign mark).
