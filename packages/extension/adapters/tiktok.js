@@ -8,6 +8,8 @@
  * the live spike (SPIKE.md).
  */
 
+import { isSupportedTiktokFeedContext } from './route-guards.js';
+
 const SELECTORS = {
   video: 'video',
   // Feed item container — VERIFIED by live spike (2026-10-02): the active
@@ -30,7 +32,7 @@ export const TiktokAdapter = {
   overlayStrategy: 'in-host',
 
   matches(location) {
-    return /(^|\.)tiktok\.com$/.test(location.hostname);
+    return isSupportedTiktokFeedContext(location);
   },
 
   /**

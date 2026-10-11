@@ -9,6 +9,8 @@
  * Candidates are hardened by the live spike (SPIKE-REELS.md).
  */
 
+import { isSupportedInstagramReelsContext } from './route-guards.js';
+
 const SELECTORS = {
   video: 'video',
   // Next-control candidates, checked in order. VERIFIED by live spike
@@ -32,7 +34,7 @@ export const InstagramReelsAdapter = {
   overlayStrategy: 'fixed-root',
 
   matches(location) {
-    return /(^|\.)instagram\.com$/.test(location.hostname);
+    return isSupportedInstagramReelsContext(location);
   },
 
   /** Currently playing (or about-to-play) video in the viewport. */
