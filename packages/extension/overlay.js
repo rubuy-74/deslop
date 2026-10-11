@@ -20,7 +20,11 @@ const BLOCKED_EVENTS = [
 
 function shieldEvents(element) {
   for (const type of BLOCKED_EVENTS) {
-    element.addEventListener(type, (e) => e.stopPropagation());
+    const shield = (e) => {
+      e.stopPropagation();
+      e.stopImmediatePropagation?.();
+    };
+    element.addEventListener(type, shield);
   }
 }
 
@@ -30,7 +34,7 @@ function ensureStyles() {
   const style = document.createElement('style');
   style.textContent = [
     '.slop-overlay { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px;',
-    '  background: rgba(10,10,10,.72); backdrop-filter: blur(14px);',
+    '  background: rgba(10,10,10,.72); backdrop-filter: blur(14px); pointer-events: auto !important;',
     '  text-align: center; padding: 28px; font-family: system-ui, sans-serif; color: #eee; }',
     // in-host: absolute inside the platform's player container. Default —
     // correct on YouTube/TikTok (no transform stacking trap, follows the
@@ -43,7 +47,7 @@ function ensureStyles() {
     '  width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }',
     '.slop-overlay .slop-title { font-size: 18px; font-weight: 700; }',
     '.slop-overlay .slop-row { display: flex; gap: 10px; }',
-    '.slop-overlay button { border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; }',
+    '.slop-overlay button { border: 0; border-radius: 8px; padding: 10px 18px; font-size: 14px; cursor: pointer; pointer-events: auto !important; touch-action: manipulation; }',
     '.slop-overlay .slop-resume { background: #4f8cff; color: #fff; }',
     '.slop-overlay .slop-skip { background: #2c2c2c; color: #eee; border: 1px solid #555; }',
     '.slop-overlay .slop-wrong { background: none; border: none; color: #777; font-size: 11px;',
@@ -74,6 +78,8 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   const overlay = document.createElement('div');
   overlay.className = `slop-overlay slop-overlay--${strategy === 'fixed-root' ? 'root' : 'host'}`;
   shieldEvents(overlay);
+  let removed = false;
+  let remove = () => {};
 
   const badge = document.createElement('div');
   badge.className = 'slop-badge';
@@ -89,12 +95,29 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   const resumeBtn = document.createElement('button');
   resumeBtn.className = 'slop-resume';
   resumeBtn.textContent = 'Resume';
-  resumeBtn.addEventListener('click', () => { remove(); actions.onResume(); });
 
   const skipBtn = document.createElement('button');
   skipBtn.className = 'slop-skip';
   skipBtn.textContent = 'Skip';
-  skipBtn.addEventListener('click', () => { remove(); actions.onSkip(); });
+  let acted = false;
+  const act = (event, action) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+    if (acted) return;
+    acted = true;
+    resumeBtn.disabled = true;
+    skipBtn.disabled = true;
+    remove();
+    action();
+  };
+  const bindAction = (button, action) => {
+    const invoke = (event) => act(event, action);
+    button.addEventListener('pointerup', invoke, true);
+    button.addEventListener('click', invoke, true);
+  };
+  bindAction(resumeBtn, actions.onResume);
+  bindAction(skipBtn, actions.onSkip);
 
   row.append(resumeBtn, skipBtn);
   overlay.append(badge, title, row);
@@ -145,9 +168,11 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
     document.documentElement.appendChild(overlay);
 
     let raf = 0;
-    let removed = false;
     const syncRect = () => {
-      if (removed) return;
+      if (removed || !host.isConnected) {
+        remove();
+        return;
+      }
       const r = host.getBoundingClientRect();
       overlay.style.top = `${r.top}px`;
       overlay.style.left = `${r.left}px`;
@@ -155,14 +180,13 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
       overlay.style.height = `${r.height}px`;
       raf = requestAnimationFrame(syncRect);
     };
-    syncRect();
-
-    const remove = () => {
+    remove = () => {
       if (removed) return;
       removed = true;
       cancelAnimationFrame(raf);
       overlay.remove();
     };
+    syncRect();
     return { remove };
   }
 
@@ -172,8 +196,7 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   }
   host.appendChild(overlay);
 
-  let removed = false;
-  const remove = () => {
+  remove = () => {
     if (removed) return;
     removed = true;
     overlay.remove();

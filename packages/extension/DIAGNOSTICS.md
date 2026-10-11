@@ -71,3 +71,20 @@ no capture or analysis request.
 4. Confirm Skip records `overlay.skip` with `advanced` or `resumed`, and the
    feed is not left paused.
 5. Expand the card and verify the skip result appears in its timeline.
+
+### Instagram control resilience
+
+Repeat the control checks in these states:
+
+1. Click Resume and Skip twice rapidly. Confirm only one action is recorded and
+   playback is not left paused.
+2. Start a warning, trigger an Instagram snap transition, then click the old
+   control. Confirm the old overlay is gone and the new Reel is unaffected.
+3. Resize to a narrow viewport and confirm the fixed-root overlay still covers
+   the Reel and its buttons remain clickable.
+4. Remove or replace the Reel host during a warning. Confirm no stale overlay
+   remains and Skip falls back to resuming playback when advancement cannot be
+   verified.
+5. When a visible next control exists, confirm Skip reports `advanced` only
+   after the active Reel identity changes. Otherwise confirm it reports
+   `resumed` and the current video continues playing.
