@@ -14,6 +14,7 @@
   const { InstagramReelsAdapter } = await import(url('adapters/instagram-reels.js'));
   const { showOverlay } = await import(url('overlay.js'));
   const { initDebugPanel } = await import(url('debug-panel.js'));
+  const { once, resumePlayback, skipWithVerification } = await import(url('control-actions.js'));
 
   /** Platform adapters, tried in order per tick. */
   const ADAPTERS = [YoutubeShortsAdapter, TiktokAdapter, InstagramReelsAdapter];
@@ -182,13 +183,13 @@
       showOverlay(
         adapter.overlayHost(video),
         {
-          onResume: () => {
+          onResume: once(() => {
             seen.set(key, 'resumed');
-            video.play().catch(() => {});
-          },
-          onSkip: () => {
-            if (!adapter.next()) video.play().catch(() => {}); // no next control: unstick
-          },
+            resumePlayback(adapter, video);
+          }),
+          onSkip: once(() => {
+            skipWithVerification(adapter, video).catch(() => resumePlayback(adapter, video));
+          }),
           // False-positive path: flagged but the user says organic. Reuses the
           // exact frames Clef judged (video is paused — fresh capture would be
           // 3 copies of the same frame).

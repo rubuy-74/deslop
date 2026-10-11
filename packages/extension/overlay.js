@@ -5,6 +5,7 @@
  */
 
 let stylesInjected = false;
+let activeFixedRootOverlay = null;
 
 /**
  * Platforms place transparent play/pause click-catchers over the video
@@ -71,9 +72,15 @@ function ensureStyles() {
 export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   ensureStyles();
 
+  if (strategy === 'fixed-root' && activeFixedRootOverlay) {
+    activeFixedRootOverlay.remove();
+    activeFixedRootOverlay = null;
+  }
+
   const overlay = document.createElement('div');
   overlay.className = `slop-overlay slop-overlay--${strategy === 'fixed-root' ? 'root' : 'host'}`;
   shieldEvents(overlay);
+  let remove = () => {};
 
   const badge = document.createElement('div');
   badge.className = 'slop-badge';
@@ -144,8 +151,15 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
     // our z-index competes in the root stacking context and wins.
     document.documentElement.appendChild(overlay);
 
+    const startHref = location.href;
+    let removed = false;
     let raf = 0;
     const syncRect = () => {
+      if (removed) return;
+      if (!host.isConnected || location.href !== startHref) {
+        remove();
+        return;
+      }
       const r = host.getBoundingClientRect();
       overlay.style.top = `${r.top}px`;
       overlay.style.left = `${r.left}px`;
@@ -155,10 +169,14 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
     };
     syncRect();
 
-    const remove = () => {
+    remove = () => {
+      if (removed) return;
+      removed = true;
       cancelAnimationFrame(raf);
       overlay.remove();
+      if (activeFixedRootOverlay?.overlay === overlay) activeFixedRootOverlay = null;
     };
+    activeFixedRootOverlay = { overlay, remove };
     return { remove };
   }
 
@@ -168,6 +186,6 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   }
   host.appendChild(overlay);
 
-  const remove = () => overlay.remove();
+  remove = () => overlay.remove();
   return { remove };
 }

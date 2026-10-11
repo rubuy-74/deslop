@@ -100,12 +100,10 @@ export const InstagramReelsAdapter = {
    * event properties (pattern proven on TikTok) -> window.scrollBy.
    */
   next() {
-    for (const sel of SELECTORS.nextButtons) {
-      const btn = document.querySelector(sel);
-      if (btn) {
-        btn.click();
-        return true;
-      }
+    const btn = this.findNextControl();
+    if (btn) {
+      btn.click();
+      return true;
     }
     const target = document.body ?? document;
     for (const init of [
@@ -118,5 +116,38 @@ export const InstagramReelsAdapter = {
     }
     window.scrollBy(0, window.innerHeight);
     return true;
+  },
+
+  findNextControl(video = this.findActiveVideo()) {
+    if (!video) return null;
+    const frame = this._item(video) ?? video;
+    const frameRect = frame.getBoundingClientRect();
+    const seen = new Set();
+    const pools = [
+      ...SELECTORS.nextButtons.map((sel) => frame.querySelectorAll?.(sel) ?? []),
+      ...SELECTORS.nextButtons.map((sel) => document.querySelectorAll(sel)),
+    ];
+    for (const pool of pools) {
+      for (const el of pool) {
+        if (seen.has(el)) continue;
+        seen.add(el);
+        if (this._validNextCandidate(el, frameRect)) return el;
+      }
+    }
+    return null;
+  },
+
+  _validNextCandidate(el, frameRect) {
+    if (!el?.isConnected) return false;
+    const style = getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.pointerEvents === 'none') return false;
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return false;
+    if (r.bottom <= 0 || r.top >= window.innerHeight) return false;
+    const yPad = Math.max(48, frameRect.height * 0.2);
+    const xPad = Math.max(220, frameRect.width * 0.6);
+    const yRelated = r.bottom >= frameRect.top - yPad && r.top <= frameRect.bottom + yPad;
+    const xRelated = r.left <= frameRect.right + xPad && r.right >= frameRect.left - xPad;
+    return xRelated && yRelated;
   },
 };

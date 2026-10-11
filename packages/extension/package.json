@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "cp ../engine/engine.js ../engine/config.js vendor/",
+    "test": "node test-phase4.mjs",
     "icons": "node scripts/gen-icons.mjs",
     "zip": "node scripts/zip.mjs"
   }
