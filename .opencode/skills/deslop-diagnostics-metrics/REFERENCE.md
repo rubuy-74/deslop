@@ -14,11 +14,11 @@ derived from a URL, source, DOM text, or account data.
 | Event | Meaning | Required fields |
 |---|---|---|
 | `context.check` | A matching-domain route was accepted or rejected | `platform`, `contextOutcome`, `contextReason` |
-| `analysis.start` | A stable active video entered analysis | `platform`, `jobId` |
+| `analysis.start` | A stable active video entered analysis | `platform`, `jobId`, `dwellMs` when measured |
 | `capture.complete` | Passive frame capture finished | `platform`, `jobId`, `captureMs` |
 | `request.start` | Content script sent an analysis message | `platform`, `jobId`, `requestCount` |
 | `request.complete` | Content script received a response or timeout | `platform`, `jobId`, `outcome`, `requestMs`, `requestCount` |
-| `analysis.complete` | The full content-side analysis pipeline finished | `platform`, `jobId`, `outcome`, `totalMs` |
+| `analysis.complete` | The full content-side analysis pipeline finished | `platform`, `jobId`, `outcome`, `totalMs`, `activeLatencyMs` when measured |
 | `decision.apply` | The decision was applied, passed, or became stale | `platform`, `jobId`, `outcome` |
 | `overlay.show` | A warning overlay was displayed | `platform`, `jobId` |
 | `overlay.resume` | The user resumed a flagged video | `platform`, `jobId` |
@@ -43,13 +43,18 @@ measurable, user-understandable stages. Do not show `analysis.start`,
 - `totalMs`: elapsed time from `analysis.start` until `analysis.complete`.
   It includes capture, request round trip, response/decision handling, and
   small local overhead. It should be approximately `captureMs + requestMs`.
+- `dwellMs`: time from candidate detection until the stability dwell completed.
+- `activeLatencyMs`: time from candidate detection until `analysis.complete`.
 - `requestCount`: number of content-script analysis messages sent for the job.
   It is normally `1`; it is not the number of internal `fetch()` retries in the
   engine unless that is explicitly instrumented in the future.
 
 Display durations in seconds for values of one second or more, otherwise in
-milliseconds. Use labels such as `Total elapsed`, `Frame capture`, `Worker
-round-trip`, and `Worker messages`.
+milliseconds. Use labels such as `Active-video latency`, `Stability dwell`,
+`Total elapsed`, `Frame capture`, `Worker round-trip`, and `Worker messages`.
+
+The exported summary includes p50/p90 values for total elapsed time,
+active-video latency, and stability dwell when those timings are available.
 
 ## Decision Fields
 
@@ -81,8 +86,9 @@ These metrics support diagnosis, not automatic proof, for parent issue #8:
 - #10: request counts can verify zero requests only when route/context outcome
   instrumentation is also present; TikTok `/` is supported only when its
   verified feed structure yields a candidate.
-- #11: stale decisions and latency are visible; dwell/cancellation and active
-  element transitions need dedicated events.
+- #11: stale decisions and latency are visible; active-work cancellation is
+  represented by `analysis.cancel` events with safe reasons such as
+  `candidate-changed`, `route-changed`, or `unsupported-context`.
 - #12: tab activation needs service-worker activation events.
 - #13: Resume/Skip outcomes are visible; playback/feed advancement still needs
   live verification.

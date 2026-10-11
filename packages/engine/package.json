@@ -9,6 +9,6 @@
     "./config": "./config.js"
   },
   "scripts": {
-    "test": "node test-decide.mjs && node test-retry.mjs && node test-cache-quota.mjs"
+    "test": "node test-decide.mjs && node test-retry.mjs && node test-cache-quota.mjs && node --test test-capture.mjs"
   }
 }

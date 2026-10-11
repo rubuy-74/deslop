@@ -34,6 +34,12 @@ export const ANALYZE = {
   evalFetchTimeoutMs: 8000,
 };
 
+export const ACTIVE_VIDEO = {
+  // Absorb Shorts snap transitions before paying for capture or analysis.
+  stabilityDwellMs: 1000,
+  completedCacheLimit: 128,
+};
+
 export const CLEF_CONFIG = {
   model: 'clef-flash', // overridable via ?model=clef (eval comparisons)
   threshold: 0.80, // flag when 1 - P(organic) >= threshold

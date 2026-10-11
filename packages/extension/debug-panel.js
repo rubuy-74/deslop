@@ -95,6 +95,13 @@ export function initDebugPanel(hooks = {}) {
   exportBtn.className = 'sd-ping';
   exportBtn.textContent = 'export';
 
+  const dwellBtn = document.createElement('button');
+  dwellBtn.className = 'sd-ping';
+  const dwellOptions = [300, 500, 700, 1000];
+  let dwellMs = hooks.initialDwellMs ?? 1000;
+  const updateDwellLabel = () => { dwellBtn.textContent = `dwell ${dwellMs}ms`; };
+  updateDwellLabel();
+
   head.append(dot, title, platformEl);
   // False-negative feedback: report the currently playing video as slop.
   if (hooks.onReportSlop) {
@@ -110,7 +117,7 @@ export function initDebugPanel(hooks = {}) {
     });
     head.append(reportBtn);
   }
-  head.append(exportBtn, pingBtn);
+  head.append(dwellBtn, exportBtn, pingBtn);
 
   const body = document.createElement('div');
   body.className = 'sd-body';
@@ -154,7 +161,15 @@ export function initDebugPanel(hooks = {}) {
   document.documentElement.appendChild(root);
 
   head.addEventListener('click', (e) => {
-    if (e.target !== pingBtn) root.classList.toggle('collapsed');
+    if (![dwellBtn, exportBtn, pingBtn].includes(e.target)) root.classList.toggle('collapsed');
+  });
+
+  dwellBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const index = dwellOptions.indexOf(dwellMs);
+    dwellMs = dwellOptions[(index + 1) % dwellOptions.length];
+    updateDwellLabel();
+    hooks.onDwellChange?.(dwellMs);
   });
 
   function setStatus(ok, text) {
@@ -179,6 +194,7 @@ export function initDebugPanel(hooks = {}) {
   function eventLabel(event) {
     const labels = {
       'capture.complete': 'Frames captured',
+      'analysis.start': 'Stability dwell complete',
       'request.complete': 'Worker response received',
       'analysis.complete': 'Analysis complete',
       'overlay.resume': 'Video resumed',
@@ -209,6 +225,7 @@ export function initDebugPanel(hooks = {}) {
 
   function jobView(jobId, events) {
     const completed = [...events].reverse().find((event) => event.type === 'analysis.complete');
+    const started = events.find((event) => event.type === 'analysis.start');
     const capture = events.find((event) => event.type === 'capture.complete');
     const request = [...events].reverse().find((event) => event.type === 'request.complete');
     const requestSource = request ?? completed;
@@ -241,6 +258,8 @@ export function initDebugPanel(hooks = {}) {
     metrics.className = 'sd-metrics';
     const metricValues = [
       ['Total elapsed', duration(completed?.totalMs)],
+      ['Active-video latency', duration(completed?.activeLatencyMs)],
+      ['Stability dwell', duration(started?.dwellMs)],
       ['Frame capture', duration(capture?.captureMs)],
       ['Worker round-trip', duration(requestSource?.requestMs)],
       ['Worker messages', String(requestSource?.requestCount ?? events.filter((event) => event.type === 'request.start').length)],
@@ -257,7 +276,7 @@ export function initDebugPanel(hooks = {}) {
     }
     const timeline = document.createElement('div');
     timeline.className = 'sd-timeline';
-    const visibleEvents = events.filter((event) => ['capture.complete', 'request.complete', 'analysis.complete'].includes(event.type));
+    const visibleEvents = events.filter((event) => ['analysis.start', 'capture.complete', 'request.complete', 'analysis.complete'].includes(event.type));
     for (const event of visibleEvents) {
       const row = document.createElement('div');
       row.className = 'sd-event';
@@ -266,7 +285,8 @@ export function initDebugPanel(hooks = {}) {
       label.textContent = eventLabel(event);
       const detail = document.createElement('span');
       detail.className = 'sd-event-time';
-      detail.textContent = event.requestMs !== undefined ? duration(event.requestMs)
+      detail.textContent = event.dwellMs !== undefined ? duration(event.dwellMs)
+        : event.requestMs !== undefined ? duration(event.requestMs)
         : event.captureMs !== undefined ? duration(event.captureMs)
         : event.totalMs !== undefined ? duration(event.totalMs)
         : event.skipOutcome ? event.skipOutcome

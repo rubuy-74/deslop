@@ -13,7 +13,19 @@ script to the extension worker for that video. The exported JSON contains only t
 names, opaque job numbers, event outcomes, request counts, and timings. It does
 not contain URLs, page text, account data, cookies, or video frames. The event
 buffer is capped at 500 events. The summary includes analysis count, request
-count, and total-latency p50/p90.
+count, and p50/p90 total, active-video latency, and dwell timings. When a candidate changes during dwell,
+capture, or a worker request, old work is cancelled locally where possible and
+late results are ignored. The export may include an `analysis.cancel` event
+with an opaque job number and safe lifecycle reason; it never includes URLs,
+source values, or frames.
+Each completed job also shows the stability dwell and active-video latency,
+from candidate detection through the final result. Export summaries include
+p50/p90 values for both metrics.
+
+The debug-panel header includes a dwell control. Click `dwell 400ms` to cycle
+through 300, 500, 700, and 1000 ms. The selected value applies to the pending
+candidate immediately and to subsequent candidates during the current tab
+session.
 
 ## Supported Contexts
 
