@@ -1,6 +1,6 @@
 # Privacy Policy — deslop
 
-Last updated: 2026-10-05
+Last updated: 2026-10-11
 
 deslop is a warn-only browser extension that flags likely
 AI-generated short-form videos. This document is the complete inventory of
@@ -15,6 +15,11 @@ only verdicts about video URLs and an anonymous daily counter.
 
 ## What happens inside your browser
 
+- On installation or extension update, the service worker locally inspects the
+  URLs of already-open tabs to find only YouTube Shorts, TikTok For You, and
+  Instagram Reels feed surfaces. It injects the controller into those matching
+  tabs so a manual refresh is not required. This URL check is used only for
+  local activation; the tab list and inspected URLs are never sent anywhere.
 - On YouTube Shorts, TikTok, and Instagram Reels, the content script finds
   the currently playing `<video>` element and captures **3 downscaled
   frames (270×480, WebP)** from live playback. Frames never leave the
@@ -63,6 +68,11 @@ beyond the frames of the video being classified, no cookies, no analytics,
 no third-party trackers, no advertising identifiers. Nothing is sold,
 shared, or used for any purpose other than classifying videos and improving
 the classifier from voluntary feedback.
+
+The `scripting` permission and narrowly scoped supported-site host permissions
+exist only to perform this local install/update activation and run the existing
+content controller on supported feed surfaces. Unsupported pages, restricted
+browser pages, and unrelated routes are not injected or messaged.
 
 ## Where data is processed
 

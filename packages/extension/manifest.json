@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "deslop",
-  "version": "0.4.8",
+  "version": "0.4.10",
   "description": "Detects AI slop in short-form video feeds and warns before you watch.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -17,9 +17,17 @@
       "128": "icons/icon-128.png"
     }
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting"],
   "host_permissions": [
-    "https://deslop-worker.rubemviscard2635.workers.dev/*"
+    "https://deslop-worker.rubemviscard2635.workers.dev/*",
+    "*://www.youtube.com/shorts*",
+    "*://youtube.com/shorts*",
+    "*://www.tiktok.com/",
+    "*://tiktok.com/",
+    "*://www.tiktok.com/foryou*",
+    "*://tiktok.com/foryou*",
+    "*://www.instagram.com/reels*",
+    "*://instagram.com/reels*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -41,14 +49,14 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["vendor/*", "adapters/*", "overlay.js", "debug-panel.js", "diagnostics.js"],
+      "resources": ["vendor/*", "adapters/*", "overlay.js", "debug-panel.js", "diagnostics.js", "content-bootstrap.js"],
       "matches": [
-        "*://www.youtube.com/*",
-        "*://youtube.com/*",
-        "*://www.tiktok.com/*",
-        "*://tiktok.com/*",
-        "*://www.instagram.com/*",
-        "*://instagram.com/*"
+        "https://www.youtube.com/*",
+        "https://youtube.com/*",
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*",
+        "https://www.instagram.com/*",
+        "https://instagram.com/*"
       ]
     }
   ],

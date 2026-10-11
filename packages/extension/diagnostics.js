@@ -4,6 +4,7 @@ const ALLOWED_FIELDS = [
   'platform', 'jobId', 'stage', 'outcome', 'errorCode', 'skipOutcome',
   'captureMs', 'requestMs', 'totalMs', 'requestCount', 'cache', 'reason',
   'slopProb', 'authenticity', 'categoryChoice', 'categoryConfidence',
+  'contextOutcome', 'contextReason',
 ];
 
 /**

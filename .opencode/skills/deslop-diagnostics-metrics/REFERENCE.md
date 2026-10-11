@@ -13,6 +13,7 @@ derived from a URL, source, DOM text, or account data.
 
 | Event | Meaning | Required fields |
 |---|---|---|
+| `context.check` | A matching-domain route was accepted or rejected | `platform`, `contextOutcome`, `contextReason` |
 | `analysis.start` | A stable active video entered analysis | `platform`, `jobId` |
 | `capture.complete` | Passive frame capture finished | `platform`, `jobId`, `captureMs` |
 | `request.start` | Content script sent an analysis message | `platform`, `jobId`, `requestCount` |
@@ -22,6 +23,10 @@ derived from a URL, source, DOM text, or account data.
 | `overlay.show` | A warning overlay was displayed | `platform`, `jobId` |
 | `overlay.resume` | The user resumed a flagged video | `platform`, `jobId` |
 | `overlay.skip` | The user activated Skip | `platform`, `jobId`, `skipOutcome` |
+
+`context.check` is intentionally not assigned a `jobId`: it describes the page
+surface before a video candidate exists. It must be deduplicated across polling
+ticks and must never include a path or URL.
 
 Internal events can be retained for export, but the panel should show only
 measurable, user-understandable stages. Do not show `analysis.start`,
@@ -74,7 +79,8 @@ These metrics support diagnosis, not automatic proof, for parent issue #8:
 
 - #9: lifecycle, timing, request count, and overlay diagnostics.
 - #10: request counts can verify zero requests only when route/context outcome
-  instrumentation is also present.
+  instrumentation is also present; TikTok `/` is supported only when its
+  verified feed structure yields a candidate.
 - #11: stale decisions and latency are visible; dwell/cancellation and active
   element transitions need dedicated events.
 - #12: tab activation needs service-worker activation events.

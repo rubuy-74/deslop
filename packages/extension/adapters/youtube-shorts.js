@@ -29,6 +29,10 @@ export const YoutubeShortsAdapter = {
     return /(^|\.)youtube\.com$/.test(location.hostname) && location.pathname.startsWith('/shorts');
   },
 
+  supportsContext(location) {
+    return /^\/shorts(?:\/|$)/.test(location.pathname);
+  },
+
   /**
    * The currently playing (or about-to-play) video in the viewport.
    * Cheap rect check rather than IntersectionObserver: polling cadence
