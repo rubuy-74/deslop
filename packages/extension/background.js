@@ -7,11 +7,24 @@
  */
 
 import { analyze, decide } from './vendor/engine.js';
+import { activateExistingTabs, shouldActivateExistingTabs } from './lifecycle.js';
 
 const DEFAULTS = {
   workerUrl: 'https://deslop-worker.rubemviscard2635.workers.dev/analyze',
   token: '',
 };
+
+chrome.runtime.onInstalled.addListener(({ reason }) => {
+  if (!shouldActivateExistingTabs(reason)) return;
+
+  activateExistingTabs({
+    queryTabs: () => chrome.tabs.query({}),
+    inject: (tabId) => chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] }),
+  }).catch((error) => {
+    // A service-worker/query failure must not prevent normal navigation activation.
+    console.warn('[slop] existing-tab activation failed:', error);
+  });
+});
 
 // Optional bundled defaults for unpacked installs (gitignored file).
 // NOTE: dynamic import() is disallowed in service workers, so this is a

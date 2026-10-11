@@ -15,6 +15,19 @@ not contain URLs, page text, account data, cookies, or video frames. The event
 buffer is capped at 500 events. The summary includes analysis count, request
 count, and total-latency p50/p90.
 
+## Supported Contexts
+
+The extension is injected and allowed to analyze only these feed surfaces:
+
+- YouTube Shorts: `/shorts` and `/shorts/<id>`.
+- TikTok: `/` or `/foryou` when the verified feed container is present.
+- Instagram: `/reels` and `/reels/<id>` with a tall, narrow Reel item.
+
+Profiles, search, home/landing pages, stories, embeds, posts, and unrelated
+video modules are rejected before candidate selection. The content controller
+re-checks the route on SPA mutations and polling; unsupported contexts produce
+no capture or analysis request.
+
 ## Reproduction Checklist
 
 ### Clean install and first use

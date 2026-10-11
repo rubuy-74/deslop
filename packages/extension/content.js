@@ -7,6 +7,9 @@
 
 (async () => {
   const url = (p) => chrome.runtime.getURL(p);
+  const { startOnce } = await import(url('content-bootstrap.js'));
+
+  await startOnce(globalThis, async () => {
   const { capturePassiveFrames } = await import(url('vendor/engine.js'));
   const { CLEF_CONFIG } = await import(url('vendor/config.js'));
   const { YoutubeShortsAdapter } = await import(url('adapters/youtube-shorts.js'));
@@ -27,6 +30,7 @@
   let lastAnalysis = null;
   let diagnostics;
   let nextJobId = 0;
+  let lastContextState = null;
 
   function sendFeedback(report) {
     return new Promise((resolve) => {
@@ -297,6 +301,18 @@
       const adapter = adapterFor(location);
       panel.setPlatform(adapter?.name ?? null);
       if (!adapter) return;
+      const supported = adapter.supportsContext(location);
+      const contextReason = supported ? 'supported-feed' : contextReasonFor(adapter, location);
+      const contextState = `${adapter.name}:${contextReason}`;
+      if (contextState !== lastContextState) {
+        lastContextState = contextState;
+        diagnostics.record('context.check', {
+          platform: adapter.name,
+          contextOutcome: supported ? 'supported' : 'unsupported',
+          contextReason,
+        });
+      }
+      if (!supported) return;
       const video = adapter.findActiveVideo();
       if (video) processVideo(video, adapter);
     } finally {
@@ -304,8 +320,23 @@
     }
   }
 
+  function contextReasonFor(adapter, loc) {
+    if (adapter.name === 'tiktok') {
+      if (/\/search(?:\/|$)/.test(loc.pathname)) return 'unsupported-search';
+      if (/^\/@[^/]+(?:\/|$)/.test(loc.pathname)) return 'unsupported-profile-or-video';
+      return 'unsupported-route';
+    }
+    if (adapter.name === 'instagram-reels') {
+      if (/\/stories(?:\/|$)/.test(loc.pathname)) return 'unsupported-stories';
+      if (/\/(?:p|explore|accounts|direct|embed)(?:\/|$)/.test(loc.pathname)) return 'unsupported-route';
+      return 'unsupported-route';
+    }
+    return 'unsupported-route';
+  }
+
   const observer = new MutationObserver(tick);
   observer.observe(document.body, { childList: true, subtree: true });
   const intervalId = setInterval(tick, 800); // SPA navigations don't always mutate promptly
   tick();
+  });
 })();

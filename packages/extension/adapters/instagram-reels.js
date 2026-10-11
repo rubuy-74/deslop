@@ -35,10 +35,17 @@ export const InstagramReelsAdapter = {
     return /(^|\.)instagram\.com$/.test(location.hostname);
   },
 
+  /** The verified supported surface is the dedicated Reels feed. */
+  supportsContext(location) {
+    return /^\/reels(?:\/|$)/.test(location.pathname);
+  },
+
   /** Currently playing (or about-to-play) video in the viewport. */
   findActiveVideo() {
     const videos = [...document.querySelectorAll(SELECTORS.video)];
     const visible = videos.filter((v) => {
+      const item = this._item(v);
+      if (!item || !this._looksLikeReelItem(item)) return false;
       const r = v.getBoundingClientRect();
       return r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
     });
@@ -91,6 +98,13 @@ export const InstagramReelsAdapter = {
       el = el.parentElement;
     }
     return video.closest('article') ?? video.closest('section');
+  },
+
+  _looksLikeReelItem(item) {
+    const r = item.getBoundingClientRect();
+    return r.height >= window.innerHeight * 0.5
+      && r.height <= window.innerHeight * 1.3
+      && r.width < window.innerWidth * 0.8;
   },
 
   /**

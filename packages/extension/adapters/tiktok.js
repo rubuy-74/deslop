@@ -33,6 +33,11 @@ export const TiktokAdapter = {
     return /(^|\.)tiktok\.com$/.test(location.hostname);
   },
 
+  /** TikTok serves For You at / or /foryou depending on account/app state. */
+  supportsContext(location) {
+    return location.pathname === '/' || /^\/foryou(?:\/|$)/.test(location.pathname);
+  },
+
   /**
    * The currently playing (or about-to-play) video in the viewport.
    * The feed is fully client-rendered; callers poll, so an early null here
@@ -41,6 +46,7 @@ export const TiktokAdapter = {
   findActiveVideo() {
     const videos = [...document.querySelectorAll(SELECTORS.video)];
     const visible = videos.filter((v) => {
+      if (!this._item(v)) return false;
       const r = v.getBoundingClientRect();
       return r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
     });
