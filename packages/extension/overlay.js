@@ -43,7 +43,7 @@ function ensureStyles() {
     // fixed-root: rendered at documentElement, rect-tracked via rAF. Required
     // only where the feed uses CSS transforms (Instagram), which trap z-index.
     '.slop-overlay--root { position: fixed; z-index: 2147483647; }',
-    '.slop-overlay .slop-badge { font-size: 26px; font-weight: 800; color: #c8ff2e; background: #ffcc4d;',
+    '.slop-overlay .slop-badge { font-size: 26px; font-weight: 800; color: #111; background: #c8ff2e;',
     '  width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }',
     '.slop-overlay .slop-title { font-size: 18px; font-weight: 700; }',
     '.slop-overlay .slop-row { display: flex; gap: 10px; }',
