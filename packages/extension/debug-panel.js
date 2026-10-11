@@ -1,8 +1,7 @@
 /**
  * Debug panel: fixed bottom-right overlay for development sessions.
- * Shows worker connection status and a live log of engine events
- * (analyzing / pass / flag / error) so behavior is visible without
- * opening devtools. Collapsible; click the header to toggle.
+ * Shows a readable, expandable card for each analyzed video so behavior is
+ * visible without opening devtools. Collapsible; click the header to toggle.
  */
 
 let stylesInjected = false;
@@ -24,9 +23,9 @@ function ensureStyles() {
   stylesInjected = true;
   const style = document.createElement('style');
   style.textContent = [
-    '.slop-debug { position: fixed; right: 12px; bottom: 12px; z-index: 10000; width: 340px;',
+    '.slop-debug { position: fixed; right: 12px; bottom: 12px; z-index: 10000; width: min(520px, calc(100vw - 24px));',
     '  background: rgba(16,16,16,.92); border: 1px solid #333; border-radius: 8px;',
-    '  font: 11px/1.45 ui-monospace, monospace; color: #ccc; }',
+    '  font: 12px/1.45 system-ui, sans-serif; color: #ccc; }',
     '.slop-debug .sd-head { display: flex; align-items: center; gap: 8px; padding: 6px 10px;',
     '  cursor: pointer; user-select: none; border-bottom: 1px solid #2a2a2a; }',
     '.slop-debug .sd-dot { width: 8px; height: 8px; border-radius: 50%; background: #888; flex: none; }',
@@ -44,30 +43,29 @@ function ensureStyles() {
     '.slop-debug .sd-form .sd-send { align-self: flex-end; background: #2c2c2c; color: #eee;',
     '  border: 1px solid #555; border-radius: 4px; padding: 3px 10px; font: inherit; cursor: pointer; }',
     '.slop-debug .sd-form .sd-send:disabled { opacity: .5; cursor: default; }',
-    '.slop-debug .sd-body { max-height: 220px; overflow-y: auto; padding: 4px 0; }',
+    '.slop-debug .sd-body { max-height: min(620px, 70vh); overflow-y: auto; padding: 6px; }',
     '.slop-debug.collapsed .sd-body { display: none; }',
-    '.slop-debug .sd-row { display: flex; gap: 6px; padding: 2px 10px; border-top: 1px solid #1f1f1f; }',
-    '.slop-debug .sd-time { color: #666; flex: none; }',
-    '.slop-debug .sd-key { color: #79b8ff; flex: none; max-width: 90px; overflow: hidden;',
-    '  text-overflow: ellipsis; white-space: nowrap; }',
-    '.slop-debug .sd-verdict { flex: none; font-weight: 700; }',
-    '.slop-debug .sd-verdict.flag { color: #f85149; } .slop-debug .sd-verdict.pass { color: #3fb950; }',
-    '.slop-debug .sd-verdict.err { color: #d29922; } .slop-debug .sd-verdict.analyzing { color: #888; }',
-    '.slop-debug .sd-extra { color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+    '.slop-debug .sd-card { border: 1px solid #333; border-radius: 6px; margin-bottom: 6px; overflow: hidden; }',
+    '.slop-debug .sd-card:last-child { margin-bottom: 0; }',
+    '.slop-debug .sd-card-head { display: flex; align-items: center; gap: 8px; width: 100%;',
+    '  padding: 9px 10px; background: #1c1c1c; color: #eee; border: 0; text-align: left; cursor: pointer; }',
+    '.slop-debug .sd-card-head:hover { background: #252525; }',
+    '.slop-debug .sd-card-title { font-weight: 700; }',
+    '.slop-debug .sd-card-meta { color: #999; }',
+    '.slop-debug .sd-card-status { margin-left: auto; font-weight: 700; }',
+    '.slop-debug .sd-card-status.pass { color: #3fb950; } .slop-debug .sd-card-status.flag { color: #f85149; }',
+    '.slop-debug .sd-card-status.error { color: #d29922; } .slop-debug .sd-card-status.analyzing { color: #aaa; }',
+    '.slop-debug .sd-details { padding: 9px 10px; background: #131313; }',
+    '.slop-debug .sd-explanation { color: #999; font-size: 11px; line-height: 1.4; margin-bottom: 9px; }',
+    '.slop-debug .sd-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 12px; margin-bottom: 9px; }',
+    '.slop-debug .sd-metric { display: flex; justify-content: space-between; gap: 8px; color: #999; }',
+    '.slop-debug .sd-value { color: #eee; text-align: right; }',
+    '.slop-debug .sd-timeline { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #2a2a2a; padding-top: 7px; }',
+    '.slop-debug .sd-event { display: grid; grid-template-columns: 104px 1fr; gap: 8px; }',
+    '.slop-debug .sd-event-name { color: #bbb; } .slop-debug .sd-event-time { color: #777; text-align: right; }',
+    '.slop-debug .sd-empty { color: #888; padding: 12px 8px; text-align: center; }',
   ].join('\n');
   document.head.appendChild(style);
-}
-
-function shortKey(key) {
-  if (!key) return '?';
-  const m = /shorts\/([^/?#]+)/.exec(key);
-  if (m) return m[1];
-  try {
-    const u = new URL(key);
-    return (u.searchParams.get('v') ?? u.pathname).slice(-11);
-  } catch {
-    return String(key).slice(-11);
-  }
 }
 
 export function initDebugPanel(hooks = {}) {
@@ -93,6 +91,10 @@ export function initDebugPanel(hooks = {}) {
   pingBtn.className = 'sd-ping';
   pingBtn.textContent = 'ping';
 
+  const exportBtn = document.createElement('button');
+  exportBtn.className = 'sd-ping';
+  exportBtn.textContent = 'export';
+
   head.append(dot, title, platformEl);
   // False-negative feedback: report the currently playing video as slop.
   if (hooks.onReportSlop) {
@@ -108,10 +110,12 @@ export function initDebugPanel(hooks = {}) {
     });
     head.append(reportBtn);
   }
-  head.append(pingBtn);
+  head.append(exportBtn, pingBtn);
 
   const body = document.createElement('div');
   body.className = 'sd-body';
+  const jobs = new Map();
+  const expanded = new Set();
 
   // Inline report form (hidden until "report slop" is clicked).
   const form = document.createElement('div');
@@ -158,27 +162,152 @@ export function initDebugPanel(hooks = {}) {
     if (text !== undefined) title.textContent = text;
   }
 
-  function log({ key, verdict, extra = '' }) {
-    const row = document.createElement('div');
-    row.className = 'sd-row';
-    const time = document.createElement('span');
-    time.className = 'sd-time';
-    time.textContent = new Date().toTimeString().slice(0, 8);
-    const keyEl = document.createElement('span');
-    keyEl.className = 'sd-key';
-    keyEl.textContent = shortKey(key);
-    keyEl.title = key ?? '';
-    const v = document.createElement('span');
-    v.className = 'sd-verdict ' + verdict;
-    v.textContent = verdict === 'flag' ? 'FLAG' : verdict === 'pass' ? 'pass' : verdict === 'err' ? 'ERR' : '…';
-    const x = document.createElement('span');
-    x.className = 'sd-extra';
-    x.textContent = extra;
-    x.title = extra;
-    row.append(time, keyEl, v, x);
-    body.prepend(row);
-    while (body.children.length > 60) body.lastChild.remove();
+  function addEvent(event) {
+    if (typeof event?.jobId !== 'number') return;
+    if (!jobs.has(event.jobId)) jobs.set(event.jobId, []);
+    jobs.get(event.jobId).push(event);
+    while (jobs.size > 60) jobs.delete(jobs.keys().next().value);
+    renderJobs();
   }
+
+  function log({ event } = {}) {
+    if (event) {
+      addEvent(event);
+    }
+  }
+
+  function eventLabel(event) {
+    const labels = {
+      'capture.complete': 'Frames captured',
+      'request.complete': 'Worker response received',
+      'analysis.complete': 'Analysis complete',
+      'overlay.resume': 'Video resumed',
+      'overlay.skip': 'Skip clicked',
+    };
+    return labels[event.type] ?? event.type;
+  }
+
+  function duration(value) {
+    if (typeof value !== 'number') return 'not recorded';
+    if (value >= 1000) return `${(value / 1000).toFixed(2)} s`;
+    return `${value} ms`;
+  }
+
+  function confidence(value) {
+    return typeof value === 'number' ? `${Math.round(value * 100)}%` : 'not recorded';
+  }
+
+  function typeLabel(value) {
+    return {
+      organic: 'Organic content',
+      absurdist_ai: 'AI absurdity bait',
+      synthetic_parody: 'AI face-swap parody',
+      static_ai_slideshow: 'Static AI slideshow',
+      other_ai: 'Other AI-generated content',
+    }[value] ?? value ?? 'not recorded';
+  }
+
+  function jobView(jobId, events) {
+    const completed = [...events].reverse().find((event) => event.type === 'analysis.complete');
+    const capture = events.find((event) => event.type === 'capture.complete');
+    const request = [...events].reverse().find((event) => event.type === 'request.complete');
+    const requestSource = request ?? completed;
+    const status = completed?.outcome ?? events.at(-1)?.outcome ?? 'analyzing';
+    const statusLabel = {
+      pass: 'Passed', flag: 'Flagged', error: 'Failed open', analyzing: 'Analyzing', stale: 'Stale',
+    }[status] ?? status;
+    const card = document.createElement('article');
+    card.className = 'sd-card';
+
+    const head = document.createElement('button');
+    head.className = 'sd-card-head';
+    head.type = 'button';
+    head.setAttribute('aria-expanded', expanded.has(jobId) ? 'true' : 'false');
+    const title = document.createElement('span');
+    title.className = 'sd-card-title';
+    title.textContent = `Video ${jobId}`;
+    const meta = document.createElement('span');
+    meta.className = 'sd-card-meta';
+    meta.textContent = events.find((event) => event.platform)?.platform ?? 'unknown platform';
+    const state = document.createElement('span');
+    state.className = `sd-card-status ${status}`;
+    state.textContent = statusLabel;
+    head.append(title, meta, state);
+
+    const details = document.createElement('div');
+    details.className = 'sd-details';
+    details.hidden = !expanded.has(jobId);
+    const metrics = document.createElement('div');
+    metrics.className = 'sd-metrics';
+    const metricValues = [
+      ['Total elapsed', duration(completed?.totalMs)],
+      ['Frame capture', duration(capture?.captureMs)],
+      ['Worker round-trip', duration(requestSource?.requestMs)],
+      ['Worker messages', String(requestSource?.requestCount ?? events.filter((event) => event.type === 'request.start').length)],
+      ['Detected type', typeLabel(completed?.categoryChoice)],
+      ['Type confidence', confidence(completed?.categoryConfidence)],
+      ['Result', completed?.outcome === 'flag' ? 'Likely AI-generated' : completed?.outcome === 'pass' ? 'Passed' : completed?.errorCode ?? 'In progress'],
+      ['Cache', completed?.cache ?? 'not recorded'],
+    ];
+    for (const [label, value] of metricValues) {
+      const metric = document.createElement('div');
+      metric.className = 'sd-metric';
+      metric.append(document.createTextNode(label), Object.assign(document.createElement('span'), { className: 'sd-value', textContent: value }));
+      metrics.append(metric);
+    }
+    const timeline = document.createElement('div');
+    timeline.className = 'sd-timeline';
+    const visibleEvents = events.filter((event) => ['capture.complete', 'request.complete', 'analysis.complete'].includes(event.type));
+    for (const event of visibleEvents) {
+      const row = document.createElement('div');
+      row.className = 'sd-event';
+      const label = document.createElement('span');
+      label.className = 'sd-event-name';
+      label.textContent = eventLabel(event);
+      const detail = document.createElement('span');
+      detail.className = 'sd-event-time';
+      detail.textContent = event.requestMs !== undefined ? duration(event.requestMs)
+        : event.captureMs !== undefined ? duration(event.captureMs)
+        : event.totalMs !== undefined ? duration(event.totalMs)
+        : event.skipOutcome ? event.skipOutcome
+        : event.errorCode ?? event.outcome ?? '';
+      row.append(label, detail);
+      timeline.append(row);
+    }
+    details.append(metrics, timeline);
+    head.addEventListener('click', () => {
+      if (expanded.has(jobId)) expanded.delete(jobId);
+      else expanded.add(jobId);
+      renderJobs();
+    });
+    card.append(head, details);
+    return card;
+  }
+
+  function renderJobs() {
+    body.replaceChildren();
+    if (!jobs.size) {
+      const empty = document.createElement('div');
+      empty.className = 'sd-empty';
+      empty.textContent = 'No videos analyzed yet.';
+      body.append(empty);
+      return;
+    }
+    [...jobs.entries()].reverse().forEach(([jobId, events]) => {
+      body.append(jobView(jobId, events));
+    });
+  }
+
+  exportBtn.addEventListener('click', () => {
+    const data = hooks.onExport?.();
+    if (!data) return;
+    const blob = new Blob([data], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'deslop-diagnostics.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
 
   pingBtn.addEventListener('click', () => {
     title.textContent = `pinging… (v${version})`;

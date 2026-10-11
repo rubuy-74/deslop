@@ -9,7 +9,7 @@
     "packages/extension"
   ],
   "scripts": {
-    "test": "npm test -w packages/engine",
+    "test": "npm test -w packages/engine && npm test -w packages/extension",
     "serve": "npm run serve -w packages/testbed",
     "dev:worker": "npm run dev -w packages/worker"
   }
