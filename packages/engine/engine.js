@@ -131,6 +131,36 @@ export async function extractFrames(video, cfg = EXTRACTION) {
  */
 export async function capturePassiveFrames(video, { count = 3, intervalMs = 600 } = {}, cfg = EXTRACTION) {
   if (video.readyState < 2) throw new Error('video not ready for passive capture');
+  const opts = arguments[1] ?? {};
+  const signal = opts.signal;
+  const isStale = opts.isStale;
+  const abortError = () => {
+    const err = new Error('passive capture cancelled');
+    err.name = 'AbortError';
+    return err;
+  };
+  const throwIfCancelled = () => {
+    if (signal?.aborted || (typeof isStale === 'function' && isStale())) throw abortError();
+  };
+  const waitWithCancellation = (ms) => new Promise((resolve, reject) => {
+    if (ms <= 0) return resolve();
+    if (signal?.aborted || (typeof isStale === 'function' && isStale())) return reject(abortError());
+    const timer = setTimeout(() => {
+      cleanup();
+      if (signal?.aborted || (typeof isStale === 'function' && isStale())) reject(abortError());
+      else resolve();
+    }, ms);
+    const onAbort = () => {
+      cleanup();
+      reject(abortError());
+    };
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener?.('abort', onAbort);
+    };
+    signal?.addEventListener?.('abort', onAbort, { once: true });
+  });
+
   const started = performance.now();
   const canvas = document.createElement('canvas');
   canvas.width = cfg.canvasWidth;
@@ -139,7 +169,9 @@ export async function capturePassiveFrames(video, { count = 3, intervalMs = 600 
 
   const blobs = [];
   for (let i = 0; i < count; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, intervalMs));
+    throwIfCancelled();
+    if (i > 0) await waitWithCancellation(intervalMs);
+    throwIfCancelled();
     drawLetterboxed(ctx, video, cfg);
     blobs.push(await encodeFrame(canvas, cfg));
   }
