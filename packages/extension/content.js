@@ -14,6 +14,7 @@
   const { InstagramReelsAdapter } = await import(url('adapters/instagram-reels.js'));
   const { showOverlay } = await import(url('overlay.js'));
   const { initDebugPanel } = await import(url('debug-panel.js'));
+  const { createDiagnostics } = await import(url('diagnostics.js'));
 
   /** Platform adapters, tried in order per tick. */
   const ADAPTERS = [YoutubeShortsAdapter, TiktokAdapter, InstagramReelsAdapter];
@@ -24,6 +25,8 @@
 
   /** Most recent completed analysis — source of frames/decision for feedback. */
   let lastAnalysis = null;
+  let diagnostics;
+  let nextJobId = 0;
 
   function sendFeedback(report) {
     return new Promise((resolve) => {
@@ -85,8 +88,9 @@
   // Opt-in checkbox on the options page; takes effect on page reload.
   const { debugPanel: debugPanelEnabled } = await chrome.storage.sync.get({ debugPanel: false });
   const panel = debugPanelEnabled
-    ? initDebugPanel({ onReportSlop })
+    ? initDebugPanel({ onReportSlop, onExport: () => diagnostics?.export() })
     : { log() {}, setStatus() {}, setPlatform() {} };
+  diagnostics = createDiagnostics({ enabled: debugPanelEnabled, onEvent: (event) => panel.log({ event }) });
 
   function blobToDataUrl(blob) {
     return new Promise((resolve, reject) => {
@@ -109,10 +113,16 @@
   const friendlyError = (msg) =>
     /invalidated/i.test(msg ?? '') ? 'extension reloaded — refresh this tab' : msg;
 
-  function sendForAnalysis(dataUrls, adapter, videoId) {
+  function sendForAnalysis(dataUrls, adapter, videoId, jobId) {
+    const requestStarted = performance.now();
+    diagnostics.record('request.start', { platform: adapter.name, jobId, requestCount: 1 });
     return new Promise((resolve) => {
       // A hung background must never wedge a video in 'analyzing' forever.
-      const timer = setTimeout(() => resolve({ flag: false, error: 'background timeout (12s)' }), 12000);
+      const timer = setTimeout(() => {
+        const requestMs = Math.round(performance.now() - requestStarted);
+        diagnostics.record('request.complete', { platform: adapter.name, jobId, outcome: 'timeout', errorCode: 'timeout', requestMs, requestCount: 1 });
+        resolve({ flag: false, error: 'background timeout (12s)', requestMs, requestCount: 1 });
+      }, 12000);
       // platform + canonical videoId let the Worker serve the shared
       // verdict cache (canonicalUrl() is null in unsynced feed contexts —
       // blob keys then pass through inert, never cached, by design).
@@ -124,11 +134,24 @@
           videoId: adapter.canonicalUrl?.() ?? videoId,
         },
         (response) => {
-          clearTimeout(timer);
+           clearTimeout(timer);
+           diagnostics.record('request.complete', {
+             outcome: chrome.runtime.lastError || !response ? 'error' : 'ok',
+             platform: adapter.name,
+             jobId,
+             errorCode: chrome.runtime.lastError || !response ? 'worker unavailable' : undefined,
+             requestMs: Math.round(performance.now() - requestStarted),
+             requestCount: 1,
+           });
           if (chrome.runtime.lastError || !response) {
             resolve({ flag: false, error: friendlyError(chrome.runtime.lastError?.message ?? 'no response') });
           } else {
-            resolve({ ...response.decision, cache: response.cache ?? null });
+             resolve({
+               ...response.decision,
+               cache: response.cache ?? null,
+               requestMs: Math.round(performance.now() - requestStarted),
+               requestCount: 1,
+             });
           }
         }
       );
@@ -141,23 +164,43 @@
     // Only analyze once the video is actually playing with data available —
     // otherwise return WITHOUT marking seen so the next tick retries.
     if (video.readyState < 2 || video.paused) return;
+    const jobId = ++nextJobId;
+    const started = performance.now();
+    diagnostics.record('analysis.start', { platform: adapter.name, jobId });
     seen.set(key, 'analyzing');
-    panel.log({ key, verdict: 'analyzing' });
+    panel.log({ id: jobId, verdict: 'analyzing' });
 
     try {
       // 3 frames over ~1.2s of live playback; decision lands ~2-3s into the short.
       const t0 = performance.now();
+      const captureStarted = performance.now();
       const { blobs } = await capturePassiveFrames(video, { count: 3, intervalMs: 600 });
+      diagnostics.record('capture.complete', { platform: adapter.name, jobId, captureMs: Math.round(performance.now() - captureStarted) });
       const dataUrls = await Promise.all(blobs.map(blobToDataUrl));
-      const decision = await sendForAnalysis(dataUrls, adapter, key);
+      const decision = await sendForAnalysis(dataUrls, adapter, key, jobId);
       const ms = Math.round(performance.now() - t0);
+      diagnostics.record('analysis.complete', {
+        platform: adapter.name,
+        jobId,
+        totalMs: Math.round(performance.now() - started),
+        outcome: decision.error ? 'error' : decision.flag ? 'flag' : 'pass',
+        errorCode: decision.error ? diagnosticErrorCode(decision.error) : undefined,
+        cache: decision.cache ?? 'none',
+        requestMs: decision.requestMs,
+        requestCount: decision.requestCount,
+        reason: decision.reason ?? undefined,
+        slopProb: decision.slopProb ?? undefined,
+        authenticity: decision.authenticity ?? undefined,
+        categoryChoice: decision.categoryChoice ?? undefined,
+        categoryConfidence: decision.categoryConfidence ?? undefined,
+      });
       if (!decision.error) lastAnalysis = { key, decision, dataUrls };
 
       if (decision.error) {
         console.warn('[slop] fail-open:', decision.error);
         if (decision.quota) panel.setStatus(false, 'daily quota exhausted — resumes tomorrow');
         else if (/unauthorized/i.test(decision.error)) panel.setStatus(false, 'unauthorized — set token');
-        panel.log({ key, verdict: 'err', extra: decision.error });
+        panel.log({ id: jobId, verdict: 'err', extra: decision.error });
         seen.set(key, 'passed');
         return;
       }
@@ -165,29 +208,36 @@
       // everyone after gets it free (X-Cache: hit).
       const cacheTag = decision.cache === 'hit' ? ' cache=hit' : '';
       if (!decision.flag) {
-        panel.log({ key, verdict: 'pass', extra: `slop=${decision.slopProb} ${ms}ms${cacheTag}` });
+        diagnostics.record('decision.apply', { platform: adapter.name, jobId, outcome: 'pass' });
+        panel.log({ id: jobId, verdict: 'pass', extra: `slop=${decision.slopProb} ${ms}ms${cacheTag}` });
         seen.set(key, 'passed');
         return;
       }
 
       // Video may have advanced while we analyzed; only warn if still current.
       if (adapter.findActiveVideo() !== video || seen.get(key) === 'resumed') {
+        diagnostics.record('decision.apply', { platform: adapter.name, jobId, outcome: 'stale' });
         seen.set(key, 'flagged'); // remember verdict if the user scrolls back
         return;
       }
 
       seen.set(key, 'flagged');
-      panel.log({ key, verdict: 'flag', extra: `${decision.reason} slop=${decision.slopProb} ${ms}ms${cacheTag}` });
+      diagnostics.record('decision.apply', { platform: adapter.name, jobId, outcome: 'flag' });
+      panel.log({ id: jobId, verdict: 'flag', extra: `${decision.reason} slop=${decision.slopProb} ${ms}ms${cacheTag}` });
+      diagnostics.record('overlay.show', { platform: adapter.name, jobId });
       video.pause();
       showOverlay(
         adapter.overlayHost(video),
         {
           onResume: () => {
+            diagnostics.record('overlay.resume', { platform: adapter.name, jobId });
             seen.set(key, 'resumed');
             video.play().catch(() => {});
           },
           onSkip: () => {
-            if (!adapter.next()) video.play().catch(() => {}); // no next control: unstick
+            const advanced = adapter.next();
+            diagnostics.record('overlay.skip', { platform: adapter.name, jobId, skipOutcome: advanced ? 'advanced' : 'resumed' });
+            if (!advanced) video.play().catch(() => {}); // no next control: unstick
           },
           // False-positive path: flagged but the user says organic. Reuses the
           // exact frames Clef judged (video is paused — fresh capture would be
@@ -211,9 +261,19 @@
       );
     } catch (err) {
       console.warn('[slop] analysis failed open:', err);
-      panel.log({ key, verdict: 'err', extra: String(err?.message ?? err) });
+      diagnostics.record('analysis.complete', { platform: adapter.name, jobId, totalMs: Math.round(performance.now() - started), outcome: 'error', errorCode: diagnosticErrorCode(err?.message) });
+      panel.log({ id: jobId, verdict: 'err', extra: String(err?.message ?? err) });
       seen.set(key, 'passed');
     }
+  }
+
+  function diagnosticErrorCode(message) {
+    const text = String(message ?? '').toLowerCase();
+    if (text.includes('timeout') || text.includes('aborted')) return 'timeout';
+    if (text.includes('quota')) return 'quota exhausted';
+    if (text.includes('unauthorized') || text.includes('401')) return 'unauthorized';
+    if (text.includes('malformed') || text.includes('missing answers')) return 'malformed response';
+    return 'analysis failed';
   }
 
   let ticking = false;

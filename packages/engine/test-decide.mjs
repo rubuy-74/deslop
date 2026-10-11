@@ -34,6 +34,7 @@ function answers({ probs, choice, noul, score }) {
   check('clear slop flags', d.flag === true);
   check('slopProb = 1 - organic', d.slopProb === 0.98);
   check('reason is top non-organic', d.reason === 'absurdist_ai');
+  check('category confidence passed through', d.categoryConfidence === 0.9);
   check('no disagreement when noul agrees', d.disagreement === false);
   check('authenticity passed through', d.authenticity === 0.4);
 }

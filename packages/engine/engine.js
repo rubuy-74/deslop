@@ -231,6 +231,7 @@ export function decide(answers, cfg = CLEF_CONFIG) {
       disagreement: false,
       authenticity: answers?.visual_authenticity?.score ?? null,
       categoryChoice: catAnswer?.choice ?? null,
+      categoryConfidence: catAnswer?.confidence ?? null,
       error: 'malformed answers: missing slop_category.probabilities.organic',
     };
   }
@@ -255,6 +256,7 @@ export function decide(answers, cfg = CLEF_CONFIG) {
     disagreement,
     authenticity: answers?.visual_authenticity?.score ?? null,
     categoryChoice: catAnswer?.choice ?? null,
+    categoryConfidence: catAnswer?.confidence ?? probs[catAnswer?.choice] ?? null,
   };
 }
 

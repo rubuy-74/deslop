@@ -41,7 +41,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["vendor/*", "adapters/*", "overlay.js", "debug-panel.js"],
+      "resources": ["vendor/*", "adapters/*", "overlay.js", "debug-panel.js", "diagnostics.js"],
       "matches": [
         "*://www.youtube.com/*",
         "*://youtube.com/*",
