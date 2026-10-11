@@ -129,7 +129,7 @@ export async function extractFrames(video, cfg = EXTRACTION) {
  * grab whatever is on screen at `count` moments spaced `intervalMs` apart.
  * @returns {Promise<{blobs: Blob[], captureMs: number}>}
  */
-export async function capturePassiveFrames(video, { count = 3, intervalMs = 600 } = {}, cfg = EXTRACTION) {
+export async function capturePassiveFrames(video, { count = 3, intervalMs = 600, signal } = {}, cfg = EXTRACTION) {
   if (video.readyState < 2) throw new Error('video not ready for passive capture');
   const started = performance.now();
   const canvas = document.createElement('canvas');
@@ -138,10 +138,37 @@ export async function capturePassiveFrames(video, { count = 3, intervalMs = 600 
   const ctx = canvas.getContext('2d');
 
   const blobs = [];
+  const abort = () => {
+    const error = new Error('analysis capture aborted');
+    error.name = 'AbortError';
+    return error;
+  };
+  const throwIfAborted = () => {
+    if (signal?.aborted) throw abort();
+  };
+  const wait = (ms) => new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(abort());
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      reject(abort());
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
+  });
+
   for (let i = 0; i < count; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, intervalMs));
+    if (i > 0) await wait(intervalMs);
+    throwIfAborted();
     drawLetterboxed(ctx, video, cfg);
     blobs.push(await encodeFrame(canvas, cfg));
+    throwIfAborted();
   }
   return { blobs, captureMs: performance.now() - started };
 }

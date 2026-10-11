@@ -145,7 +145,9 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
     document.documentElement.appendChild(overlay);
 
     let raf = 0;
+    let removed = false;
     const syncRect = () => {
+      if (removed) return;
       const r = host.getBoundingClientRect();
       overlay.style.top = `${r.top}px`;
       overlay.style.left = `${r.left}px`;
@@ -156,6 +158,8 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
     syncRect();
 
     const remove = () => {
+      if (removed) return;
+      removed = true;
       cancelAnimationFrame(raf);
       overlay.remove();
     };
@@ -168,6 +172,11 @@ export function showOverlay(host, actions, { strategy = 'in-host' } = {}) {
   }
   host.appendChild(overlay);
 
-  const remove = () => overlay.remove();
+  let removed = false;
+  const remove = () => {
+    if (removed) return;
+    removed = true;
+    overlay.remove();
+  };
   return { remove };
 }

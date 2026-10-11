@@ -2,7 +2,7 @@ const MAX_EVENTS = 500;
 
 const ALLOWED_FIELDS = [
   'platform', 'jobId', 'stage', 'outcome', 'errorCode', 'skipOutcome',
-  'captureMs', 'requestMs', 'totalMs', 'requestCount', 'cache', 'reason',
+  'captureMs', 'requestMs', 'totalMs', 'activeLatencyMs', 'dwellMs', 'requestCount', 'cache', 'reason',
   'slopProb', 'authenticity', 'categoryChoice', 'categoryConfidence',
   'contextOutcome', 'contextReason',
 ];
@@ -30,15 +30,24 @@ export function createDiagnostics({ enabled = false, onEvent = () => {} } = {}) 
   }
 
   function summary() {
-    const values = analysis.map((event) => event.totalMs).sort((a, b) => a - b);
-    const percentile = (fraction) => values.length
+    const percentile = (values, fraction) => values.length
       ? values[Math.min(values.length - 1, Math.max(0, Math.ceil(values.length * fraction) - 1))]
       : null;
+    const values = analysis.map((event) => event.totalMs).sort((a, b) => a - b);
+    const activeValues = analysis.map((event) => event.activeLatencyMs).filter((value) => typeof value === 'number').sort((a, b) => a - b);
+    const dwellValues = events
+      .filter((event) => event.type === 'analysis.start' && typeof event.dwellMs === 'number')
+      .map((event) => event.dwellMs)
+      .sort((a, b) => a - b);
     return {
       analysisCount: values.length,
       requestCount: events.filter((event) => event.type === 'request.start').length,
-      p50TotalMs: percentile(0.5),
-      p90TotalMs: percentile(0.9),
+      p50TotalMs: percentile(values, 0.5),
+      p90TotalMs: percentile(values, 0.9),
+      p50ActiveLatencyMs: percentile(activeValues, 0.5),
+      p90ActiveLatencyMs: percentile(activeValues, 0.9),
+      p50DwellMs: percentile(dwellValues, 0.5),
+      p90DwellMs: percentile(dwellValues, 0.9),
     };
   }
 
