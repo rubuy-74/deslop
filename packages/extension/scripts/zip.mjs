@@ -48,9 +48,13 @@ await mkdir(stage, { recursive: true });
 for (const f of [
   'manifest.json',
   'background.js',
+  'lifecycle.js',
   'content.js',
+  'content-bootstrap.js',
+  'analysis-session.js',
   'overlay.js',
   'debug-panel.js',
+  'diagnostics.js',
   'options.html',
   'options.js',
   'config.local.json',

@@ -84,7 +84,48 @@ Answers these questions:
     .slice(0, 5)
     .map((e) => e.textContent.trim().slice(0, 80));
 
+  // 7. Warning overlay hit-testing and event delivery. This distinguishes a
+  // CSS/stacking problem from a content-controller callback problem.
+  const overlay = document.querySelector('.slop-overlay');
+  const controls = overlay ? [...overlay.querySelectorAll('button')] : [];
+  const clickLog = window.__slopReelsSpikeClicks ?? [];
+  window.__slopReelsSpikeClicks = clickLog;
+  for (const button of controls) {
+    for (const type of ['pointerdown', 'pointerup', 'click']) {
+      button.addEventListener(type, () => clickLog.push({
+        type,
+        className: button.className,
+        at: new Date().toISOString(),
+      }), { capture: true });
+    }
+  }
+  out.overlay = overlay ? {
+    connected: overlay.isConnected,
+    className: overlay.className,
+    parent: overlay.parentElement?.tagName ?? null,
+    rect: (() => { const r = overlay.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; })(),
+    computed: (() => { const s = getComputedStyle(overlay); return { pointerEvents: s.pointerEvents, zIndex: s.zIndex, position: s.position, display: s.display }; })(),
+    buttons: controls.map((button) => {
+      const r = button.getBoundingClientRect();
+      const s = getComputedStyle(button);
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        text: button.textContent.trim(),
+        rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+        computed: { pointerEvents: s.pointerEvents, zIndex: s.zIndex, display: s.display, visibility: s.visibility },
+        hitTag: hit?.tagName ?? null,
+        hitClass: hit?.className ?? null,
+        hitIsButton: hit === button,
+        ancestors: document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+          .slice(0, 6)
+          .map((el) => ({ tag: el.tagName, id: el.id, className: typeof el.className === 'string' ? el.className : null })),
+      };
+    }),
+  } : null;
+  out.overlayClickLog = clickLog;
+
   console.log('=== SLOP REELS SPIKE ===\n' + JSON.stringify(out, null, 2));
+  console.log('After clicking Resume or Skip, run: JSON.stringify(window.__slopReelsSpikeClicks, null, 2)');
 })();
 ```
 
@@ -121,3 +162,14 @@ Key findings:
 - `nextButtons`: aria-label next control confirmed working — stays primary; fallbacks annotated as verified-inert
 - `_item`: documented that MAIN/SECTION overshoot (full-width) — geometry heuristic is load-bearing
 - Canvas capture: CONFIRMED clean (blob: srcs)
+
+## Control probe finding (2026-10-11)
+
+- The overlay received the button interaction, but Resume/Skip threw
+  `ReferenceError: Cannot access 'remove' before initialization` before the
+  action callback ran. The fixed-root and in-host teardown functions are now
+  initialized before binding button handlers.
+- The verified Instagram next control is a global fixed control outside the
+  narrow Reel item. Skip no longer filters document-level next controls by Reel
+  container, and no longer dispatches the spike-proven inert keyboard/scroll
+  fallbacks.

@@ -203,6 +203,21 @@
       && source === session.source;
   }
 
+  // A warned video is intentionally paused, so active-video detection may
+  // prefer another visible preloaded Reel. User actions still belong to the
+  // warning when its element, route, key, and source remain current.
+  function isActionLive(session) {
+    if (!analysisSession?.isCurrent(session)) return false;
+    const adapter = adapterFor(location);
+    const source = session.video.currentSrc || session.video.src || null;
+    return adapter === session.adapter
+      && `${adapter.name}:${location.href}` === session.routeKey
+      && adapter.supportsContext(location)
+      && session.video.isConnected !== false
+      && adapter.videoKey(session.video) === session.key
+      && source === session.source;
+  }
+
   async function processVideo(session) {
     const { video, adapter, key } = session;
     if (!key || analysisSession.completedState(key)) return;
@@ -286,25 +301,30 @@
         adapter.overlayHost(video),
         {
           onResume: () => {
-            if (!isLive(session)) return;
+            if (!isActionLive(session)) return;
             diagnostics.record('overlay.resume', { platform: adapter.name, jobId });
             analysisSession.remember(key, 'resumed');
             activeOverlay = null;
             video.play().catch(() => {});
           },
           onSkip: () => {
-            if (!isLive(session)) return;
-            const advanced = adapter.next();
-            diagnostics.record('overlay.skip', { platform: adapter.name, jobId, skipOutcome: advanced ? 'advanced' : 'resumed' });
+            if (!isActionLive(session)) return;
+            Promise.resolve(adapter.next()).then((result) => {
+              const advanced = result === true || result === 'advanced';
+              diagnostics.record('overlay.skip', { platform: adapter.name, jobId, skipOutcome: advanced ? 'advanced' : 'resumed' });
+              if (!advanced) video.play().catch(() => {}); // no next control: unstick
+            }).catch(() => {
+              diagnostics.record('overlay.skip', { platform: adapter.name, jobId, skipOutcome: 'resumed' });
+              video.play().catch(() => {});
+            });
             analysisSession.remember(key, 'resumed');
             activeOverlay = null;
-            if (!advanced) video.play().catch(() => {}); // no next control: unstick
           },
            // False-positive path: flagged but the user says organic. Reuses the
            // exact frames Clef judged (video is paused — fresh capture would be
            // 3 copies of the same frame).
            onReport: async (comment) => {
-             if (!isLive(session)) return false;
+             if (!isActionLive(session)) return false;
              const report = buildReport({
               adapter,
               key,
@@ -315,7 +335,7 @@
               captureContext: 'analysis-cache',
              });
              const res = await sendFeedback(report);
-             if (!isLive(session)) return false;
+             if (!isActionLive(session)) return false;
              panel.log({ key, verdict: res.ok ? 'pass' : 'err', extra: res.ok ? `feedback: organic → ${res.key}` : `feedback failed: ${res.error}` });
             return res.ok;
           },

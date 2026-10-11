@@ -1,11 +1,11 @@
 {
   "name": "@slop/extension",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.4.14",
   "type": "module",
   "scripts": {
     "build": "cp ../engine/engine.js ../engine/config.js vendor/",
-    "test": "node --test test-diagnostics.mjs test-context.mjs test-lifecycle.mjs test-analysis-session.mjs",
+    "test": "node --test test-diagnostics.mjs test-context.mjs test-lifecycle.mjs test-analysis-session.mjs test-overlay.mjs",
     "icons": "node scripts/gen-icons.mjs",
     "zip": "node scripts/zip.mjs"
   }

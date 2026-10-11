@@ -24,6 +24,31 @@ const SELECTORS = {
   videoLink: 'a[href^="/reel/"]',
 };
 
+export function isUsableNextControl(control) {
+  if (!control?.isConnected || control.disabled || control.getAttribute?.('aria-disabled') === 'true') return false;
+  const rect = control.getBoundingClientRect?.();
+  return !rect || (rect.width > 0 && rect.height > 0);
+}
+
+function waitForAdvance(previous, findActiveVideo, identity, timeoutMs = 1200) {
+  const started = performance.now();
+  return new Promise((resolve) => {
+    const check = () => {
+      const current = findActiveVideo();
+      if (identity(current) && identity(current) !== previous) {
+        resolve(true);
+        return;
+      }
+      if (performance.now() - started >= timeoutMs) {
+        resolve(false);
+        return;
+      }
+      setTimeout(check, 50);
+    };
+    check();
+  });
+}
+
 export const InstagramReelsAdapter = {
   name: 'instagram-reels',
 
@@ -108,29 +133,23 @@ export const InstagramReelsAdapter = {
   },
 
   /**
-   * Skip = exactly what the user's own input would do.
-   * Order: chevron/next button (if present — spike verifies) -> Instagram's
-   * keyboard shortcut 'j' (next post on IG surfaces) -> ArrowDown with full
-   * event properties (pattern proven on TikTok) -> window.scrollBy.
+   * Skip uses Instagram's verified global next-Reel control. The control is
+   * outside the narrow Reel item in the live DOM, so scoping document-level
+   * candidates to the item incorrectly hides the real navigation button.
    */
-  next() {
+  async next() {
+    const current = this.findActiveVideo();
+    const identity = (video) => video ? `${this.videoKey(video)}:${video.currentSrc || video.src || ''}` : null;
+    const before = identity(current);
+    const controls = [];
     for (const sel of SELECTORS.nextButtons) {
-      const btn = document.querySelector(sel);
-      if (btn) {
-        btn.click();
-        return true;
-      }
+      controls.push(...document.querySelectorAll(sel));
     }
-    const target = document.body ?? document;
-    for (const init of [
-      { key: 'j', code: 'KeyJ', keyCode: 74 },
-      { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
-    ]) {
-      target.dispatchEvent(
-        new KeyboardEvent('keydown', { ...init, which: init.keyCode, bubbles: true, cancelable: true })
-      );
+    const button = [...new Set(controls)].find(isUsableNextControl);
+    if (button) {
+      button.click();
+      if (await waitForAdvance(before, () => this.findActiveVideo(), identity)) return 'advanced';
     }
-    window.scrollBy(0, window.innerHeight);
-    return true;
+    return 'resumed';
   },
 };
