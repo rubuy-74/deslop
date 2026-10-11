@@ -101,6 +101,9 @@ set it once on the options page (click the toolbar icon). The debug/feedback
 panel is off by default — enable it on the options page (reload open tabs
 after changing).
 
+For live browser verification steps/results, use
+[`docs/phase-6-live-verification.md`](docs/phase-6-live-verification.md).
+
 `npm run icons` regenerates the PNG set from `icons/icon.svg` (the
 warning-sign mark).
 `npm run zip` builds `dist/deslop-<version>.zip` for the Chrome Web
